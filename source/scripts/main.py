@@ -73,11 +73,10 @@ if gl.PP_USE_SIMULINK:
 
 #  import your parameter file here
 #
-import advancedBallDO as mParam
-#import bouncingballD as mParam
+#import advancedBallDO as mParam
+import bouncingballD as mParam
 #import pendulumDS as mParam
 #import bounceWall as mParam
-#import airCondition3 as mParam
 
 
 TRANSLATE = True
