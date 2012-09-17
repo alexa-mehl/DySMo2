@@ -50,7 +50,7 @@ model = d.model() ### DO NOT CHANGE###
 model.simInfo = simInfo ### DO NOT CHANGE###
 
 model.moFile = ['PendelScript.mo'] # SET: name of Modelfiles, separated by comma
-model.modelPath = "..\Beispiele\Pendel2" # SET: set directory in which the model files are
+model.modelPath = "..\..\sample\pendulum" # SET: set directory in which the model files are
 model.resFolder = "result" # SET: the result folder where the simulation results are saved
 model.arrToSave = ['x', 'y'] # SET: the names of the variables you want to save, these names will apprear in the observer date file, but the variables might be called differently in each mode
 model.plotList = [['t', 'y'], ['x', 'y']] # SET: data to be plotted at the end of the simulation. (t represents time), names correspond to the arrToSave names
