@@ -49,7 +49,7 @@ model = d.model() ### DO NOT CHANGE###
 
 model.simInfo = simInfo ### DO NOT CHANGE###
 
-model.moFile = ["mechanik.mo", "mechanikOM.mo"] # SET: name of Modelfiles, separated by comma
+model.moFile = ["mechanik.mo"]# SET: name of Modelfiles, separated by comma
 model.modelPath = "..\..\sample\MechStruk" # SET: set directory in which the model files are
 model.resFolder = "result" # SET: the result folder where the simulation results are saved
 model.arrToSave = ['x', 'y'] # SET: the names of the variables you want to save, these names will apprear in the observer date file, but the variables might be called differently in each mode
@@ -87,7 +87,7 @@ mode1.transitions = [trans1_2] # add transistions to the mode, if more than one 
 ########################################### DEFINE A MODE ###########################################
 mode2 = d.mode() 
 
-mode2.modeName = "mechanikOM.ball_struc"
+mode2.modeName = "mechanik.ball_struc"
 mode2.tool = Env.OMODELICA
 mode2.arrToSave = ['x', 'h']
 mode2.simInfo = d.simInfo() #### here a simInfo object can be addded

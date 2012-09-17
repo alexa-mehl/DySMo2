@@ -17,12 +17,12 @@ SIMTIME = 10    # simulation time
 
 # Type in path and filename for the model here
 FILEDIR = "..\..\sample\MechStruk"
-MOFILE = ["mechanik.mo", "mechanikOM.mo"]
+MOFILE = ["mechanik.mo"]
 RESULTFOLDER = "resultDy"
 
 
 MODE1 = "mechanik.wagen_struc"
-MODE2 = "mechanikOM.ball_struc"
+MODE2 = "mechanik.ball_struc"
 MODE3 = "mechanik.contact_struc"
 #MODE4         = "mechanik.contact_wall"
 MODELNAMELIST = [MODE1, MODE2, MODE3]
