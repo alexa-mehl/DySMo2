@@ -139,10 +139,11 @@ package mechanik
   model ball_struc
     extends FlyingBall;
     Integer switch_to(start = 0);
-  equation
+  algorithm
     when h < r then
-      switch_to = 3;
-      terminate("Spring auf Boden");
+     switch_to := 3;
+     my_term(1);
+     // terminate("Spring auf Boden");
     end when;
    // when 10 < x then
     //  switch_to = 4;
