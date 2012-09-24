@@ -37,4 +37,4 @@ INSTALL_OM_OPT = True
 OMPath = os.path.join('C:\\', 'OpenModelica1.8.1', 'bin', 'omc')
 
 # Simulink settings (TODO)
-INSTALL_SIMULINK_OPT = False
+INSTALL_SIMULINK_OPT = True
