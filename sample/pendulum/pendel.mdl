@@ -6,7 +6,7 @@ Model {
     NumRootInports	    0
     NumRootOutports	    0
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.28"
+    ComputedModelVersion    "1.30"
     NumModelReferences	    0
     NumTestPointedSignals   5
     TestPointedSignal {
@@ -62,9 +62,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "Alexa"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Mon Jul 09 17:22:42 2012"
-  RTWModifiedTimeStamp	  263755360
-  ModelVersionFormat	  "1.%<AutoIncrement:28>"
+  LastModifiedDate	  "Tue Oct 02 20:54:35 2012"
+  RTWModifiedTimeStamp	  271112071
+  ModelVersionFormat	  "1.%<AutoIncrement:30>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -805,7 +805,7 @@ Model {
   }
   System {
     Name		    "pendel"
-    Location		    [707, 557, 1658, 861]
+    Location		    [336, 201, 1287, 675]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -905,7 +905,7 @@ Model {
       System {
 	Name			"pendel"
 	Location		[212, 177, 1100, 718]
-	Open			on
+	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
 	ScreenColor		"white"

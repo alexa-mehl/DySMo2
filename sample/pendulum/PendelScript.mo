@@ -55,22 +55,11 @@ end Ball;
 
 model pendel_struc
   extends pendelphi;
-  parameter String resultFile="end.txt";
   Integer switch_to(start = 0);
 
 equation
-  when initial() then
-    Modelica.Utilities.Files.removeFile(resultFile);
-  end when;
-
     when F <= 0 or terminal() then
     switch_to = 2;
-    print("switch_to "+ String(2),resultFile);
-    print("time "+String(time),resultFile);
-     print("x "+String(x),resultFile);
-     print("y "+String(y),resultFile);
-     print("der(x) "+String(der(x)),resultFile);
-     print("der(y) "+String(der(y)),resultFile);
     terminate("Pendulum to ball");
     end when;
 
@@ -78,24 +67,23 @@ end pendel_struc;
 
 model ball_struc
   extends Ball;
-  parameter String resultFile="end.txt";
   Integer switch_to(start = 0);
   Angle phi;
   AngularVelocity dphi;
     Real r;
+    Integer dummy(start = 0);
 equation
   phi = asin(x/L);
   dphi = der(phi);
    r = sqrt(x^2+y^2);
-   when initial() then
-    Modelica.Utilities.Files.removeFile(resultFile);
+
+  when r<L then
+    dummy = 1;
   end when;
-  when (r>L+0.001) then
+
+  when r>L and dummy >=1 then
     switch_to = 1;
-    print("switch_to "+String(1),resultFile);
-     print("time "+String(time),resultFile);
-     print("x "+String(x),resultFile);
-     print("dphi "+String(dphi),resultFile);
+
    terminate("Ball to Pendulum");
   end when;
 end ball_struc;

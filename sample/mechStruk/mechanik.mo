@@ -142,7 +142,7 @@ package mechanik
   algorithm
     when h < r then
      switch_to := 3;
-     my_term(1);
+     terminate("ball boden");
      // terminate("Spring auf Boden");
     end when;
    // when 10 < x then

@@ -35,11 +35,13 @@ class DyMatStruk(DyMat.DymolaMat):
         d2 = self.data(varName2)
         plt.plot(d1[:], d2[:])
 
-    def getVarArray(self, varNames):
-        v = [numpy.array(self.data(n), ndmin=2) for n in varNames]
-        a, aname, tmp = self.abscissa(varNames[0])
-        v.insert(0, numpy.array(a, ndmin=2))
-        return numpy.concatenate(v, 0)
+#==============================================================================
+#     def getVarArray(self, varNames):
+#         v = [numpy.array(self.data(n), ndmin=2) for n in varNames]
+#         a, aname, tmp = self.abscissa(varNames[0])
+#         v.insert(0, numpy.array(a, ndmin=2))
+#         return numpy.concatenate(v, 0)
+#==============================================================================
 
 
     def getEndVal(self, varName):

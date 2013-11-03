@@ -16,3 +16,15 @@ To run the delivered examples:
 6. Set the model parameters and transitions in "scripts/<modelName>.py"
 
 7. Run the simulation with "python testbench.py"
+
+
+To run the examples run the files:
+pendulum.py
+pendulumDS.py
+bouncingBallSame.py
+bounceWall.py
+advancedBallDO.py
+bouncingballD.py
+
+from the source/scripts folder
+

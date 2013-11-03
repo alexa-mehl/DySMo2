@@ -7,6 +7,13 @@ package bounceWand
   constant Real g = 9.81;
   //Real VX;   //Ballbeschleunigung in x Richtung
 
+function my_term
+
+input Integer code;
+external "C" my_terminate(code);
+annotation(Include = "void my_terminate(int code) { modelErrorCode = code; };");
+end my_term;
+
   model FlyingBall
 
   parameter Real r = radius;
@@ -205,5 +212,15 @@ equation
   end when;
 end contact_wall;
 
+model contact_struc_OM
+extends ContactBall;
+  Integer switch_to(start = 0);
+algorithm
+
+  when (ball.s > r) then
+    switch_to :=1;
+    terminate("Ende");
+  end when;
+end contact_struc_OM;
   annotation (uses(Modelica(version="3.2")));
 end bounceWand;

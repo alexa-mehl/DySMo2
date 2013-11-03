@@ -27,6 +27,7 @@ import os.path
 import scipy.io
 import numpy as np
 import pymat
+import time as t
 
 
 #The name of the .mos script gernerated during the translation
@@ -35,7 +36,7 @@ SCRIPTNAME = "oMScript"
 #do you like to extend your result directory? Then put in the string here:
 EXTENSION = ""
 STP_SIZE = "0.01"  # set your desired StepSize, constant for now
-OMPath = r"C:/OpenModelica1.8.1/bin/omc "
+
 
 
 class SimulinkMode(mode):
@@ -54,8 +55,11 @@ class SimulinkMode(mode):
     def loadInitial(self):
         self.matlab = pymat.MatlabCom()
         self.matlab.open()
-        self.simulationInformation.initNames, self.simulationInformation.initValue = self.__loadMat('init')
-        self.simulationInformation.initData = []
+        self.initNames, self.initValue = self.__loadMat('init')
+        self.initIndex = {}
+        for i, name in enumerate(self.initNames):
+                self.initIndex[name] = i        
+        
         
     def __loadMat(self, file):
         self.matlab.eval ("run('" + self.absModelPath + "\\" + self.modeName + "_" + file + ".m')")        
@@ -70,37 +74,57 @@ class SimulinkMode(mode):
             if len(item) < 3 or item[0:2] != '__':
                 initNames.append(item)
                 initValue.append(test[item][0][0])        
-        return initNames, initValue
+        return initNames,  np.array(initValue)
         
-            
-    def setInit(self, ind, arr):
-        counter = 0
-        for i in ind:            
-            self.simulationInformation.initValue[i] = arr[counter]   
-            counter = counter + 1
-    
-    def setInitSim(self):
+
+    def saveInit_all(self):
         counter = 0;
-        for name in self.simulationInformation.initNames:            
-            self.matlab.put({name : self.simulationInformation.initValue[counter].astype('float')})   
-            counter = counter + 1            
+        self.matlab.eval ("cd " + self.absModelPath)
+        for name in self.initNames:     
+            self.matlab.put({name : self.initValue[counter].astype('float')})   
+            counter = counter + 1    
+
+    def setInit(self, ind, arr):
+                   
+        self.initValue[ind] = arr  
+        
+        return  self.initValue
             
     def simulate(self):
-        self.matlab.eval ("cd " + self.absModelPath)
-        self.setInitSim()
-        self.matlab.eval ("clear logsout") 
-        self.matlab.eval ("sim('" + self.modeName + ".mdl', 'startTime', '" + str(self.simulationInformation.startTime) + "' , 'stopTime', '" + str(self.simulationInformation.stopTime) + "')")        
-        self.matlab.eval ("logsout = ans")  
+        self.matlab.eval ("cd " + self.absModelPath + "; clear logsout;" + "sim('" + self.modeName + ".mdl', 'startTime', '" + str(self.simulationInformation.startTime) + "' , 'stopTime', '" + str(self.simulationInformation.stopTime) + "'); logsout = ans")
         
-    def getEndVal(self):
-        self.matlab.eval ("clear yout") 
-        self.matlab.eval ("yout = logsout.get('logsout')")  
-        self.matlab.eval ("[dataNames, simData] = extract2(yout)")
-        self.simData = self.matlab.get('simData')
+        
+    def getEndVal(self):        
+        ttt = t.time()
+        self.matlab.eval ("clear yout; yout = logsout.get('logsout'); [dataNames, simData] = extract2(yout)")
+
+        print 'time extract:' +str(self.matlab.get('simData') )
+        print t.time()-ttt
+    
+        ttt = t.time()
+        self.simData = self.matlab.get('simData') 
+        print 'time simData'
+        print t.time()-ttt
+        
+        print self.simData
+        
+        
+        ttt = t.time()
         dummy = self.matlab.get('dataNames').tolist()
-        for item in dummy:
-            self.simulationInformation.endNames.append(item[0])
+        if self.endNames == []:
+            for item in dummy:
+                self.endNames.append(item[0])
+                
+        self.endIndex = {}
+        for i, name in enumerate(self.endNames):
+                self.endIndex[name] = i
+                
+        print 'time loop'
+        print t.time()-ttt
+        self.endValue =  self.simData[-1, :]
         return self.simData[-1, -1], self.simData[-1, :]
+        
+        
             
         
     def addData(self, modeID, data, varNames):
@@ -112,7 +136,7 @@ class SimulinkMode(mode):
         
         self.matlab.put({'modeID' : modeID})
         self.matlab.eval ("m = ones(size(dataMatrix,1),1)")
-        self.matlab.eval ("dataMatrix(:,end+1) =double(modeID) * m")
+        self.matlab.eval ("dataMatrix(:,end+1) = double(modeID) * m")
         
         dataMatrix = self.matlab.eval("dataMatrix= dataMatrix'")
         dataMatrix = self.matlab.get("dataMatrix")
@@ -125,9 +149,9 @@ class SimulinkMode(mode):
             
         return data
             
-    def getSwitchTo(self, end_val, end_names):
+    def getSwitchTo(self):
         self.matlab.eval ("ind = find(strncmp('switch_to',dataNames,length('switch_to')))")
         self.matlab.eval ("switch_to = simData(end,ind)")
         switch_to = self.matlab.get('switch_to')
         self.matlab.eval('clear ind switch_to')
-        return switch_to
+        return switch_to, []

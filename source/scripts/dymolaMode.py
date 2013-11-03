@@ -21,14 +21,14 @@
 
 ## This file represents the interface that have to be provided for each
 ## single modeling tool. If you want to add a tool to the framework, start here
-
+import win32ui
+import dde
 from mode import mode
 from utility import Solver
 import scipy.io
 import os
 import numpy as np
-import win32ui
-import dde
+
 import subprocess
 import time
 import shutil    # high level file operations (e.g. delete non empty directory)
@@ -61,7 +61,8 @@ class dymolaMode(mode):
         self.myModel.addModeToList(self)
         self.absModelPath = os.path.abspath(self.myModel.modelPath)
         self.absModePath = self.absModelPath + '\\' + self.myModel.resFolder \
-        + '\\' + getDirName(self.modeName)
+        + '\\' + getDirName(self.modeName+'_m'+ str(modeID))
+        self.initData = []
 
     ## mapSover takes on of the given Solver in utility.py and maps it to tool
     #  specified settings. for dymola specific settings, refer to "dsin.txt"
@@ -138,7 +139,7 @@ class dymolaMode(mode):
         for uFile in self.myModel.moFile:
             self.openModel(uFile)
         fullName = self.modeName
-        underpath = self.myModel.resultPath + "\\" + getDirName(fullName)
+        underpath = self.absModePath
         #check weather the sub directory already exists
         if os.path.exists(underpath) != 1:
             os.makedirs(underpath)
@@ -147,12 +148,11 @@ class dymolaMode(mode):
             shutil.rmtree(underpath)
             os.makedirs(underpath)
         #dymola: switch to result folder to save the results at the right place
-        dymolaConnector.conversation.Exec("cd(\"" + self.myModel.resFolder
-                                         + "/" + getDirName(fullName) + "\")")
+        dymolaConnector.conversation.Exec("cd(\"" + string.replace(self.absModePath, '\\', '/') + "\")")
+                                         
         dymolaConnector.conversation.Exec("simulateModel(\"" + fullName + "\",\
-                                stopTime=0, method= \"" + self.solver + "\" )")
-        #dymolaConnector.conversation.Exec("translateModel(\"" + fullName + "\")")
-        #dymola: change back to actual model directory
+                                 stopTime=0, method= \"" + self.solver + "\" )")
+
         dirNameValidForDym = string.replace(self.absModelPath, '\\', '/')
         dymolaConnector.conversation.Exec("cd(\"" + dirNameValidForDym + "\")")
 
@@ -165,68 +165,72 @@ class dymolaMode(mode):
         if os.path.isfile(path + '\dsin.mat'):
             os.remove(path + '\dsin.mat')
 
-        if self.modeID == 1:
-            if os.path.isfile(path + '\dsin.mat') == False:
-                os.system('alist.exe -b ' + path + '\dsin.txt ' + path\
-                           + '\dsin.mat')
-        else:               
-            if os.path.isfile(path + '\dsin.mat') == False:
-                os.system('alist.exe -b ' + path + '\dsfinal.txt ' + path\
-                           + '\dsin.mat')
+        if os.path.isfile(path + '\dsin.mat') == False:
+                 os.system('alist.exe -b ' + path + '\dsin.txt ' + path + '\dsin.mat')
+           
         loadMathPath = path + '\dsin.mat'
         loadMathPath.replace("/", "\\")
         data = scipy.io.loadmat(loadMathPath)
         x0names_1, x0_1 = self.__getVar(data)
         os.chdir(currentDir)
         #data['initialValue'][:,0] = data2['initialValue'][:,0] 
-        self.simulationInformation.initData = data
-        self.simulationInformation.initValue = x0_1[:, 1]
-        self.simulationInformation.initNames = x0names_1
-        self.simulationInformation.endData = data
-        self.simulationInformation.endValue = x0_1[:, 1]
-        self.simulationInformation.endNames = x0names_1
-        self.simulationInformation.endNames = x0names_1
+        self.initData = data
+        self.initValue = x0_1[:, 1]
+        self.initNames = x0names_1
+        
+        self.initIndex = {}
+        for i, name in enumerate(x0names_1):
+                self.initIndex[name] = i
+        
+        self.endValue = x0_1[:, 1]
+        self.endNames = x0names_1
+        self.endIndex = self.initIndex        
+
 
     def simulate(self):
-        #self.toInterface.simulate(self.modeName, self.simulationInformation)
-        self.saveInit_all()
+
         currentDir = os.path.abspath(os.curdir)
         path = self.absModePath
         # start dymosim.exe
         os.chdir(path)
-        os.system(path + '\dymosim.exe ' + path + '\dsin.mat ' + path
-                  + '\dres.mat>null')
+        
+        os.system(path+'\dymosim.exe '+path+ '\dsin.mat '+ path+ '\dres.mat>null') 
+          
+  
         # rename from dsfinal to dsfinal.mat
         # don t work with the -b option ...
         os.chdir(gl.PP_ALISTDIR)
+        #t3 = t.time()        
+        
         os.system('alist.exe -b ' + path + '\dsfinal.txt ' + path
                   + '\dsfinal.mat ')
+
         os.chdir(currentDir)
 
     def setInit(self, ind, arr):
         #TODO: Warum zusaetzlich initData['initialValue']????
-        self.simulationInformation.initData['initialValue'][ind, 1] = arr
+        self.initValue[ind] = arr
+        return self.initValue
+
        
     def getEndVal(self):
         data = scipy.io.loadmat(self.absModePath + '/dsfinal.mat')
         exp = data['experiment']
         dummy, x = self.__getVar(data)
         t = exp[0][0]
-        self.simulationInformation.endValue = x[:, 1]
-        self.simulationInformation.initData = data	
-        self.simulationInformation.initValue = x[:, 1]
+        self.endValue = x[:, 1]
+        self.initValue = x[:, 1]
         return t, x[:, 1]
 
     def addData(self, modeID, data, varNames):
-        #return self.toInterface.addData(path, modeID, data, varNames)
         s = mat.DyMatStruk(self.absModePath + '\dres.mat')
+        print varNames
         a = s.getVarArray(varNames)
         temp = [None] * len(a[0])
         ind = 0
         for dummy in temp:
             temp[ind] = modeID
             ind = ind + 1
-        #new data file?
         if len(data) == 0:
             data = np.concatenate((a, [temp]), axis=0)
         else:
@@ -244,15 +248,16 @@ class dymolaMode(mode):
     ## Save all initial data to the dsin.mat, call this before the simulation
     ## start
     def saveInit_all(self):
-        modelName = self.modeName
         simParameter = self.simulationInformation
         #only use the last part for directory
-        mNameOnly = getDirName(modelName)
+        
+        
         # saves the initial data in dsin.mat to start the simulation.
         # The default can be changes through the input parameters here all
         # initial values are given in one matrix
-        Aclass = simParameter.initData['Aclass']
-        experiment = simParameter.initData['experiment']
+        self.initData['initialValue'][:,1] = self.initValue
+        Aclass = self.initData['Aclass']
+        experiment = self.initData['experiment']
         experiment[0] = simParameter.startTime
         experiment[1] = simParameter.stopTime
         experiment[2] = simParameter.intervalLen
@@ -260,14 +265,13 @@ class dymolaMode(mode):
         experiment[4] = simParameter.tolerance
         experiment[5] = simParameter.fixed
         experiment[6] = simParameter.solver
-        initialname = simParameter.initData['initialName']
-        method = simParameter.initData['method']
-        settings = simParameter.initData['settings']
-        scipy.io.savemat(self.absModelPath + '\\' + self.myModel.resFolder
-                         + '\\' + mNameOnly + '/dsin.mat', mdict=\
+        initialname = self.initData['initialName']
+        method = self.initData['method']
+        settings = self.initData['settings']
+        scipy.io.savemat(self.absModePath + '/dsin.mat', mdict=\
                          {'Aclass': (Aclass), 'experiment': (experiment), \
                           'initialName': (initialname), \
-                          'initialValue': (self.simulationInformation.\
+                          'initialValue': (self.\
                                            initData['initialValue']), \
                           'method': (method), 'settings': (settings)}, \
                           format='4')

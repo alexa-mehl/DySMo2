@@ -25,6 +25,25 @@ import sys
 import shutil
 import switch as sw
 
+#check if header exists (setup.py was successfully)
+if not os.path.isfile('globalHeader.py'):
+    sys.exit("Global header file not found, run setup.py first!")
+
+# Local (package) python imports
+import globalHeader as gl
+import mode as transition
+
+from utility import Env
+
+if gl.PP_USE_DYMOLA:
+    import dymolaMode as dMode
+if gl.PP_USE_OMODELICA:
+    import oModelicaMode as oMode
+if gl.PP_USE_SIMULINK:
+    import SimulinkMode as simMode
+
+
+
 DATARESULT = 'outputData'
 
 
@@ -39,9 +58,9 @@ class model:
     #  @param rFolder Name of the result folder
     #  @param glStopTime Represents the global simulation time
     def __init__(self, mPath, mFile, rFolder, glStopTime, glSaveList, plotList):
+                
             self.mName_list = []   # Mode name list
             self.moFile = mFile
-            #self.tools = tools
             self.modelPath = mPath
             self.resultPath = mPath + os.sep + rFolder
             self.resFolder = rFolder
@@ -59,10 +78,13 @@ class model:
             for dummy in mFile:
                 self.moFilePath.append(self.modelPath + os.sep + mFile[ind])
                 ind = ind + 1
-            if os.path.exists(self.moFilePath[0]) != 1:
-                # error mo file not found
-                sys.exit(".mo file '%s' not found! Program halt..." % self.moFilePath[0])
-
+            if len(self.moFilePath) > 0:
+                if os.path.exists(self.moFilePath[0]) != 1:
+                    # error mo file not found
+                    sys.exit(".mo file '%s' not found! Program halt..." % self.moFilePath[0])
+                     
+            
+    
     def getGlStopTime(self):
             return self.__glStopTime
 
@@ -135,3 +157,78 @@ class model:
     def translateAllModes(self):
         for modeToTrans in self.modeList:
             modeToTrans.translate()
+
+def init(m, translate):
+    tempBuf = False
+    try:
+        sys.argv[1]
+    except IndexError:
+        tempBuf = False
+    else:
+        # argv[1] exists
+        if sys.argv[1] == "1":
+            tempBuf = True
+
+    #instantiate an test object
+    modelObject = model(m.modelPath, m.moFile, m.resFolder, m.simInfo.stopTime,m.arrToSave, m.plotList)
+
+    instModes(modelObject, m)
+
+    #check if it is necessary to compile the model (only for Modelica models)
+    if translate or tempBuf == True:
+        modelObject.translateAllModes()
+
+    modelObject.startSwitch()
+
+    print "success, program terminated ordinary"
+    sys.exit(0)
+
+
+def instModes(modelObject, model):
+        #check if it is necessary to compile the model (only for Modelica models)
+    for index, mode in enumerate(model.modes):
+    
+        if mode.simInfo.solver == []:
+            mode.simInfo.solver = model.simInfo.solver
+        if (mode.simInfo.tolerance) == []:
+            mode.simInfo.tolerance = model.simInfo.tolerance
+        if (mode.simInfo.intervalNum) == []:
+            mode.simInfo.intervalNum = model.simInfo.intervalNum
+        if (mode.simInfo.intervalLen) == []:
+            mode.simInfo.intervalLen = model.simInfo.intervalLen
+        if (mode.simInfo.fixed) == []:
+            mode.simInfo.fixed = model.simInfo.fixed
+        
+        trans = []
+        for tran in mode.transitions:
+            trans.append(tran)
+
+            #trans.append(transition.transition(tran.modeIDToSw, 'conditionToSimulate', tran.outName, tran.inName))
+    
+            
+            
+            
+        if(mode.tool == Env.OMODELICA):
+            oMode.oModelicaMode(modelObject, trans,
+                                mode.arrToSave, mode.simInfo.solver, model.simInfo.startTime,
+                                model.simInfo.stopTime, mode.simInfo.tolerance, mode.simInfo.intervalNum,
+                                mode.simInfo.intervalLen, mode.simInfo.fixed, (index + 1),
+                                mode.modeName)
+        elif (mode.tool  == Env.SIMULINK):
+            simMode.SimulinkMode(modelObject, trans,
+                                mode.arrToSave, mode.simInfo.solver, model.simInfo.startTime,
+                                model.simInfo.stopTime, mode.simInfo.tolerance, mode.simInfo.intervalNum,
+                                mode.simInfo.intervalLen, mode.simInfo.fixed, (index + 1),
+                                mode.modeName)
+        elif (mode.tool  == Env.DYMOLA):
+            dMode.dymolaMode(modelObject, trans,
+                                mode.arrToSave, mode.simInfo.solver, model.simInfo.startTime,
+                                model.simInfo.stopTime, mode.simInfo.tolerance, mode.simInfo.intervalNum,
+                                mode.simInfo.intervalLen, mode.simInfo.fixed, (index + 1),
+                                mode.modeName)
+        else:
+            sys.exit("""User specified mode not found in corresponding
+                        Environment-enumeration""")   
+                        
+                        
+        

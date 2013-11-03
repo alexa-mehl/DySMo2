@@ -20,9 +20,11 @@
 """
 import definitions as d
 from utility import Env, Solver
-
+import model as m
 #Write down your model Parameter here
 
+Translate = True   
+   
 ##############################################################################
 ##################################BEGIN expected user input###################
 ##############################################################################
@@ -34,9 +36,9 @@ simInfo = d.simInfo() ### DO NOT CHANGE###
 
 # change here #
 simInfo.startTime = 0     # SET: start time of simulation
-simInfo.stopTime = 20     # SET: simulation time
+simInfo.stopTime = 17     # SET: simulation time
 simInfo.solver = Solver.DASSL # SET: default solver for the model
-simInfo.tolerance = 3e-03      # tolerance of solver
+simInfo.tolerance = 0.0001      # tolerance of solver
 simInfo.intervalNum = 500    # number of saved data
 simInfo.intervalLen = 0   # interval lenght for saved data
 simInfo.fixed = 0   # fixed step size
@@ -69,8 +71,8 @@ mode1.simInfo = d.simInfo() # SET: empty solver settings, means the global setti
 
 ####### DEFINE TRANSITIONS FOR THE DEFINED MODE #############
 
-trans1_2 = d.trans() # creates ne instance of a transistion
-
+trans1_2 = d.trans() # creates an instance of a transistion
+trans1_2.label = 1 # SET: label of transition for identification
 trans1_2.modeIDToSw = 2 # SET: mode ID of the next mode
 trans1_2.outName = ['v', 'h'] # SET: variable names to read from mode1
 trans1_2.inName = ['damper.v_rel', 'damper.s_rel'] # SET: corresponding variable names to be initialized in the new mode
@@ -101,7 +103,6 @@ trans2_1.modeIDToSw = 1
 trans2_1.outName = ['damper.v_rel', 'damper.s_rel']
 trans2_1.inName = ['v', 'h']
 
-
 ########  Add transitions to mode ############
 
 mode2.transitions = [trans2_1]
@@ -114,8 +115,9 @@ mode2.transitions = [trans2_1]
 
 model.modes = [mode1, mode2]
 
-
+m.init(model, Translate)
 
 ##############################################################################
 ##################################END expected user input#####################
 ##############################################################################
+

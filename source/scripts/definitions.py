@@ -24,7 +24,7 @@
 # This file defines some basic classes for the template to specify variable-structure models.
 # These classes are not necessary in the rest of the framework.
 #==============================================================================
-
+from utility import Env, Solver
 
 
 ## Simulation information, unique for all modes
@@ -54,7 +54,7 @@ class model:
         self.plotList = []
         self.modes = []
         self.arrToSave = []
-        self.simInfo = []
+        self.simInfo = simInfo
         
         
 ## model
@@ -73,6 +73,8 @@ class mode:
         
 class trans:
 ## Constructor
+    def mapping(self,act_mode, old_mode):
+        act_mode.initValue = act_mode.initValue 
     #  @param modeName The mode name corresponding with the modelName in
     #                  class model
     #  @param modeID   A unique Mode number to identify the mode to switch
@@ -82,6 +84,10 @@ class trans:
     #                  to have the same length)
     def __init__(self):
         self.modeIDToSw = []
-        #self.condition = []
+        self.label = []
+        # these two have to be mapped once, not by the user
         self.outName = []
         self.inName = []
+        self.myOutNameInd = []
+        self.followInNameInd = []
+        self.fct = self.mapping

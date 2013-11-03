@@ -20,9 +20,10 @@
 """
 import definitions as d
 from utility import Env, Solver
-
+import model as m
 #Write down your model Parameter here
 
+translate = True
 ##############################################################################
 ##################################BEGIN expected user input###################
 ##############################################################################
@@ -36,10 +37,10 @@ simInfo = d.simInfo() ### DO NOT CHANGE###
 simInfo.startTime = 0     # SET: start time of simulation
 simInfo.stopTime = 10     # SET: simulation time
 simInfo.solver = Solver.DASSL # SET: default solver for the model
-simInfo.tolerance = 3e-05      # tolerance of solver
+simInfo.tolerance = 3e-03      # tolerance of solver
 simInfo.intervalNum = 500    # number of saved data
 simInfo.intervalLen = 0   # interval lenght for saved data
-simInfo.fixed = 0   # fixed step size
+simInfo.fixed = 0.001   # fixed step size
 
 # end change simulation information #
 
@@ -142,6 +143,7 @@ mode3.transitions = [trans3_2]
 
 model.modes = [mode1, mode2, mode3]
 
+m.init(model, translate)
 
 
 ##############################################################################

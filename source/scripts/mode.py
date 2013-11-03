@@ -23,32 +23,34 @@
 import sys
 
 
-## record class to avoid confusing, nested dataarrays
-class transition:
-## Constructor
-    #  @param modeName The mode name corresponding with the modelName in
-    #                  class model
-    #  @param modeID   A unique Mode number to identify the mode to switch
-    #  @param condition set any switching conditions (string, optional)
-    #  @param outList  Means a switch to mode "switch to"
-    #  @param inList   was mapped to the corresponding outList (both lists have
-    #                  to have the same length)
-    def __init__(self, switchTo, condition, outList, inList):
-        self.modeIDToSw = switchTo
-        self.modeIndexToSW = (switchTo - 1)
-        self.condition = condition
-        # these two have to be mapped once, not by the user
-        self.outName = outList
-        self.inName = inList
-        self.myOutNameInd = []
-        self.followInNameInd = []
-        #the 4 following lists are only used, if wildcards are used
-        self.nestedOutIndex = []
-        self.nestedOutNames = []
-        self.nestedFolIndex = []
-        self.nestedFolNames = []
-        # represents the indices from the vars the user is interested in
-        self.indVarsToSimulOut = []
+#==============================================================================
+# ## record class to avoid confusing, nested dataarrays
+# class transition:
+# ## Constructor
+#       
+#     
+#     #  @param modeName The mode name corresponding with the modelName in
+#     #                  class model
+#     #  @param modeID   A unique Mode number to identify the mode to switch
+#     #  @param condition set any switching conditions (string, optional)
+#     #  @param outList  Means a switch to mode "switch to"
+#     #  @param inList   was mapped to the corresponding outList (both lists have
+#     #                  to have the same length)
+#     def __init__(self, switchTo, condition, outList, inList):
+#         self.modeIDToSw = switchTo
+#         self.modeIndexToSW = (switchTo - 1)
+#         self.condition = condition
+#         
+#         # these two have to be mapped once, not by the user
+#         self.initFcn = ''
+#         self.outName = outList
+#         self.inName = inList
+#         self.myOutNameInd = []
+#==============================================================================
+#        self.followInNameInd = []
+        
+    
+    
 
 
 ## Simulation information, unique for all modes
@@ -65,12 +67,8 @@ class simInformation:
         self.intervalNum = IntervalNum
         self.intervalLen = IntervalLen
         self.fixed = fixed
-        self.initData = []
-        self.initValue = []
-        self.initNames = []
-        self.endValue = []
-        self.endNames = []
-        #self.resPath = resultPath
+        
+        
 
     def setInitData(self, data):
         self.initData = data
@@ -94,11 +92,18 @@ class mode(object):
                                                         solver, tolerance,
                                                         IntervalNum,
                                                         IntervalLen, fixed)
+            self.recompile = False
             self.modeID = modeID
-            self.moFile = moFile      # corresponding mo File
             self.modeName = modeName  # name
             self.myModel = model      # corresponding model
             self.absModelPath = ""
+            self.initValue = []
+            self.initNames = []
+            self.endValue = []
+            self.endNames = []
+            # hash, name -> index in endNames und initNames
+            self.initIndex = {}
+            self.endIndex = {}
 
     # mode is abstract, its not allowed to instantiate a basis object
     def mapSolver(self, solv):
@@ -131,16 +136,32 @@ class mode(object):
         # @param index     The index where the switch_to variable can be found
         # @return swTo     Integer with the switch_to from the simulation,
         #                  -1 if switch to is not vaild
-    def getSwitchTo(self, endValues, endNames):
+    def getSwitchTo(self):
         #get the index from the name
         helpInd = -1
-        try:
-            helpInd = endNames.index("switch_to")
-        except ValueError:
-            print "switch_to not found, expected last mode -> break while"
-            return -1
-        try:
-            return endValues[helpInd]
-        except IndexError:
-            print "Error in __getSwitchTo:"
-            sys.exit("Corresponding value not found")
+        if "switch_to" in self.endNames:
+            helpInd = self.endNames.index("switch_to")
+            return self.endValue[helpInd], []
+        else:
+            try:
+                helpInd = self.endNames.index("switch_id")
+            except ValueError:
+                print "switch_id not found, expected last mode -> break while"
+                return -1
+            try:
+                return [], self.endValue[helpInd]
+            except IndexError:
+                print "Error in __getSwitchTo:"
+                sys.exit("Corresponding value not found")
+
+
+    def getID(self):
+            #get the index from the name
+            helpInd = -1
+            
+            if 'id' in self.endNames:
+                helpInd = self.endNames.index("switch_to")
+                return self.endValue[helpInd]
+            else:
+                return []
+            

@@ -1,67 +1,134 @@
-import mode
-from utility import Environment, Solver
+# -*- coding: utf-8 -*-
+"""
+  Copyright (C) 2012  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  
+  This file is part of modelica3d 
+  (https://mlcontrol.uebb.tu-berlin.de/redmine/projects/modelica3d-public).
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+   
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import definitions as d
+from utility import Env, Solver
+import model as m
+
 #Write down your model Parameter here
 
-###############################################################################
-##################################BEGIN expected user input####################
-###############################################################################
-#
-#  The selected simulation parameters will be saved here
-ALGO = Solver.DASSL        # solver
-SOLVER = "dassl"        # solver
-INT_LENGTH = 0          # interval lenght for saved data
-INT_NUM = 500        # number of saved data
-TOL = 3e-05      # tolerance of solver
-FIXED = 0          # fixed step size
-SIMTIME = 10         # simulation time
+##############################################################################
+##################################BEGIN expected user input###################
+##############################################################################
 
-# Type in path and filename for the model here
-FILEDIR = "..\..\sample\pendulum"
-MOFILE = ["PendelScript.mo"]
-RESULTFOLDER = "resultDY"
-MODEL1 = "PendelScript.pendel_struc"
-MODEL2 = "PendelScript.ball_struc"
-MODELNAMELIST = [MODEL1, MODEL2]
-TOOLS = [Environment.DYMOLA, Environment.DYMOLA]
-SOLVERS = [Solver.DASSL, Solver.DASSL]
+translate = True
+#Write down your model Parameter here
 
-#Which variables are you interested in?
-# for saving use structures like: ['h', 'u']
-# these are global variable names.
-# Please note: the names doesnot have to fit with real output names in the
-#              single modes. if the names dosnot fit, change the
-#              'outputVAriablToSaveMx' and append it to the corresponding mode.
-outputVariablesToSave = []
-#append for every mode the individual names to save
-outputVariablesToSave.append(['x', 'y'])
-# for plotting use: [['t','h'],['v','t'],['...','...']]
-# note :do not plot variables which are not in the globalSaveList!
-outputVariablesToPlot = [['t', 'y'], ['x', 'y']]
+##############################################################################
+##################################BEGIN expected user input###################
+##############################################################################
+
+#### default simulation information, if it isn't overwirtten in the specific modes this setting is used #####
+
+def speed(act_mode, old_mode):
+    ind = act_mode.initIndex['dphi']
+    act_mode.initValue[ind] =  0.0
+
+simInfo = d.simInfo() ### DO NOT CHANGE###
 
 
-#mapping list for the variables
-outList = ['x', 'y', 'der(x)', 'der(y)']
-inList = ['x', 'y', 'vx', 'vy']
-#if there is a name difference between the vars to save and the
-#global outputVariablesToSave, append it here otherwise leave the array empty
-#Note: If not empty then same length as 'outputVariablesToSave'
-outputVariablesToSave.append([])
+# change here #
+simInfo.startTime = 0     # SET: start time of simulation
+simInfo.stopTime = 10     # SET: simulation time
+simInfo.solver = Solver.DASSL # SET: default solver for the model
+simInfo.tolerance = 1e-07     # tolerance of solver
+simInfo.intervalNum = 500    # number of saved data
+simInfo.intervalLen = 0   # interval lenght for saved data
+simInfo.fixed = 0   # fixed step size
 
-#create modes for testing
+# end change simulation information #
 
-translist1_2 = mode.transition(2, 'conditionToSimulate', outList, inList)
+####### DEFINE A MODEL #########
 
-outList = ['x', 'der(phi)','phi']
-inList = ['x', 'dphi','phi']
-#if there is a name difference between the vars to save and the
-#global outputVariablesToSave, append it here otherwise leave the array empty
-#Note: If not empty then same length as 'outputVariablesToSave'
-outputVariablesToSave.append([])
+model = d.model() ### DO NOT CHANGE###
 
-translist2_1 = mode.transition(1, 'conditionToSimulate', outList, inList)
-transitionsAll = []
-transitionsAll.append([translist1_2])
-transitionsAll.append([translist2_1])
-###############################################################################
-##################################END expected user input######################
-###############################################################################
+model.simInfo = simInfo ### DO NOT CHANGE###
+
+model.moFile = ['PendelScript.mo'] # SET: name of Modelfiles, separated by comma
+model.modelPath = "..\..\sample\pendulum" # SET: set directory in which the model files are
+model.resFolder = "result" # SET: the result folder where the simulation results are saved
+model.arrToSave = ['x', 'y'] # SET: the names of the variables you want to save, these names will apprear in the observer date file, but the variables might be called differently in each mode
+model.plotList = [['t', 'y'], ['x', 'y']] # SET: data to be plotted at the end of the simulation. (t represents time), names correspond to the arrToSave names
+
+
+########################################### DEFINE A MODE ###########################################
+mode1 = d.mode() 
+
+mode1.modeName = "PendelScript.pendel_struc" # SET: name of the model for this mode
+mode1.tool = Env.DYMOLA # SET: tool which is used for the simulation of this mode
+mode1.arrToSave = ['x', 'y'] # SET: variables to be observed, these will be saved under the specified names in the model
+mode1.simInfo = d.simInfo() # SET: empty solver settings, means the global settings are used
+#### Example on how to change specific solver information just for this mode
+#mode1.simInfo.solver = Solver.RADAU
+#mode1.simInfo.tolerance = 1e-03
+
+####### DEFINE TRANSITIONS FOR THE DEFINED MODE #############
+
+trans1_2 = d.trans() # creates ne instance of a transistion
+
+trans1_2.modeIDToSw = 2 # SET: mode ID of the next mode
+trans1_2.outName = ['x', 'y', 'der(x)', 'der(y)']  # SET: variable names to read from mode1
+trans1_2.inName = ['x', 'y', 'vx', 'vy'] # SET: corresponding variable names to be initialized in the new mode
+
+########  Add transitions to mode ############
+
+mode1.transitions = [trans1_2] # add transistions to the mode, if more than one transition was created add them comma separated
+
+
+########################################### END OF MODE ###########################################
+
+
+
+########################################### DEFINE A MODE ###########################################
+mode2 = d.mode() 
+
+mode2.modeName = "PendelScript.ball_struc"
+mode2.tool = Env.DYMOLA
+mode2.arrToSave = ['x', 'y']
+mode2.simInfo = d.simInfo() #### here a simInfo object can be addded
+
+
+####### DEFINE TRANSITIONS FOR THE DEFINED MODE #############
+
+trans2_1 = d.trans()
+
+trans2_1.modeIDToSw = 1
+trans2_1.outName = ['x', 'phi']
+trans2_1.inName =  ['x', 'phi']
+trans2_1.fct = speed
+
+########  Add transitions to mode ############
+
+mode2.transitions = [trans2_1]
+
+
+########################################### END OF MODE ###########################################
+
+
+#### ADD MODES TO MODEL ####
+
+model.modes = [mode1, mode2]
+
+
+m.init(model, translate)
+
+##############################################################################
+##################################END expected user input#####################
+##############################################################################

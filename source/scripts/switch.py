@@ -25,7 +25,6 @@
 # methods from these classes to simulate the variable-structure model. 
 # Also methods to plot and save simulation data are implemented here.
 #==============================================================================
-
 import scipy.io
 import os
 import pylab as plt
@@ -35,6 +34,7 @@ from copy import deepcopy
 # high level file operations (e.g. delete an non empty directory)
 import shutil
 import multiprocessing
+import time
 
 SAVE_ADDITIONAL_FOLDER = False
 PLOT_RESULT = True
@@ -55,9 +55,12 @@ class switch:
 
     ## Run the simulation and switch between the modes
     def runSimulation(self):
+        
+        
         # read initial values for simulation start
-        for modes in self.myModel.modeList:
-            modes.loadInitial()
+        for mode in self.myModel.modeList:
+            mode.loadInitial()
+            
 
         # Start Simulation: Run through all modes, jump in at mode 0
         act_mode = self.myModel.modeList[0]
@@ -67,25 +70,53 @@ class switch:
         loopIsActive = True
         # create new data file in our result path with the results of the first
         # mode
-        self.resFileHandler = self.finalDataPath + '/FinalOutfile.mat'
+        self.resFileHandler = self.finalDataPath + '\\FinalOutfile.mat'
         # count all conditions
         transitionCounter = 0
+        simTime = 0
+        mapTime = 0
+        endTime = 0
+        cpuTime = 0
+        initTime = 0
+        iterate = -1
+        startTime  = time.time()
         while (t < self.myModel.getGlStopTime()
                and loopIsActive):
-            print 'time:', t
+            print iterate
+            print t
+            iterate = iterate +1
             #lets simulate ...
             act_mode.simulationInformation.startTime = t
-            act_mode.simulationInformation.stopTime \
- = self.myModel.getGlStopTime()
+            act_mode.simulationInformation.stopTime = self.myModel.getGlStopTime()
+            ss = time.time()
+            
+            #print 'init start'
+            act_mode.saveInit_all()
+            initTime = initTime +time.time()-ss
+            
+            #print 'sim start'
+            ss = time.time()
             act_mode.simulate()
-
+            simTime = simTime + time.time()-ss
             #Get the end values, these are the start values for the next mode
+            
+            #print 'sim end'
+            ss = time.time()
             t, end_val = act_mode.getEndVal()
+            print 'endTime'
+            print t
+            cpuTime = cpuTime + end_val[-1]
+            endTime = endTime + (time.time()-ss)
+            #print 'end read'
+
 
             #add the mode id to the result file
-            self.saved_data = act_mode.addData(act_mode.modeID,
+            if act_mode.arrToSave[0] != []:
+                self.saved_data = act_mode.addData(act_mode.modeID,
                                                self.saved_data,
                                                act_mode.arrToSave[0])
+                                               
+                                             
 
             # Save all simulation results in a separate folder, if necessary
             if(SAVE_ADDITIONAL_FOLDER):
@@ -101,29 +132,32 @@ class switch:
             #remember the actual indices
             if t < self.myModel.getGlStopTime():
                 #print act_mode.simulationInformation.endNames
-                SwitchTo = int(act_mode.getSwitchTo(end_val,
-                               act_mode.simulationInformation.endNames))
-                if SwitchTo == -1:
+                
+                SwitchTo, SwitchID = act_mode.getSwitchTo()
+                if SwitchID == -1:
                     loopIsActive = False  # break the while loop
 
                 old_mode = act_mode
 
                 if SwitchTo > 0:
-                    act_mode, transition = self.__assignModeAndTransIndex(
-                                                        old_mode, SwitchTo)
+                    act_mode, transition = self.__assignModeAndTransIndex(old_mode, SwitchTo, SwitchID)
                     # do the allocation only, if the variable myOutNameInd is 0
                     if len(transition.myOutNameInd) == 0:
-                        transition.followInNameInd, transition.myOutNameInd = self.__assignNameInd(transition.inName, transition.outName, act_mode.simulationInformation.initNames, old_mode.simulationInformation.endNames)
-                        
+                        mapStart = time.time()
+                        transition.followInNameInd, transition.myOutNameInd = self.__assignNameInd(transition, act_mode, old_mode)
+                        mapTime = mapTime + (time.time() - mapStart)
 
-                    print "Switch to modeID:", int(SwitchTo)
-                    endValArr = np.array(end_val)
-                    #endState = old_mode.simulationInformation.initData['initValue'][transition.myOutNameInd, 0]
-                    #endState = old_mode.simulationInformation.initValue[transition.myOutNameInd]
-                    arr = endValArr[transition.myOutNameInd]
-                    act_mode.setInit(transition.followInNameInd, arr)
+                    act_mode.initValue[transition.followInNameInd] = old_mode.endValue[transition.myOutNameInd] 
+                    transition.fct(act_mode, old_mode)
+                   
+                    #init = transition.fct(act_mode.initNames, deepcopy(act_mode.initValue), old_mode.endNames, old_mode.endValue) 
+                    #act_mode.setInit(range(len(act_mode.initValue)), act_mode.initValue)
+
+
 
                 transitionCounter += 1  # increment internal transition counter
+                #print 'mapping'
+            
         #End while
 
         ## Save Results in final mat file
@@ -136,16 +170,41 @@ class switch:
         indToSave = []
         for count, dummy in enumerate(varNamesToSave):
             indToSave.append(self.saved_names.index(varNamesToSave[count]))
+            
         #append modeID
         indToSave.append(self.saved_names.index('modeID'))
         #save results to mat file
-        self.__saveFinalDataToMat(indToSave)
-
+        
+        print '\n\n\n'
+        print 'SIMULATION_TIME'
+        print time.time()-startTime
+        
+        print 'CPU calc time'
+        print  cpuTime
+        
+        print 'simulation time'
+        print simTime
+        
+        print 'init time'
+        print initTime
+        
+        print 'MAP Time'
+        print mapTime
+        
+        print 'End Time'
+        print endTime
+        
+        print 'iterate'
+        print iterate
+        
+        if act_mode.arrToSave[0] != []:
+            self.__saveFinalDataToMat(indToSave)
+            if(PLOT_RESULT):
+                self.__plotResults()
+            else:
+                print"No plot requested, simulation done"
         ## Plot the results if requested
-        if(PLOT_RESULT):
-            self.__plotResults()
-        else:
-            print"No plot requested, simulation done"
+        print 'blub'
 
 ## The method assign the indices to the names in the nameList in the data
     #  field
@@ -153,54 +212,44 @@ class switch:
         # @param dataToSearch The corresponding data field where the indices
         #        should be found
         # @return retIndexLst The list of indices you searched
-    def __assignNameInd(self, varNamesLsIn, varNamesLsOut, dataToSearchIn, dataToSearchOut):
+    def __assignNameInd(self, transition, act_mode, old_mode):
 
+
+        varNamesLsIn = transition.inName
+        varNamesLsOut = transition.outName
+        dataToSearchIn = act_mode.initIndex
+        dataToSearchOut= old_mode.endIndex
+        
         retIndexIn = []
         retIndexOut = []
         
-        if len(varNamesLsIn)==0:
-            
-            ind_try = []
-            names_try = []
-            for i, name in enumerate(dataToSearchIn):
-                ind_try.append(i)
-                names_try.append(name)
-            for i, name in enumerate(dataToSearchOut):
-                if name  in names_try:
-                    idx = names_try.index(name)
-                    retIndexOut.append(i)
-                    retIndexIn.append(ind_try[idx])
+        findExtra = []
         
-        else:
-        
-            for ind, names in enumerate(varNamesLsIn):
+        for i, name in enumerate(varNamesLsOut):
+             try:
+                retIndexOut.append(dataToSearchOut[name])
+             except KeyError:
+                 if name == '*':
+                    findExtra = dataToSearchIn.keys()
+
                 
-                if '.*' not in names:
-                    #no wildcard used, simple mapping: exit if variables not match:
-                    try:
-                        retIndexIn.append(dataToSearchIn.index(names))
-                        retIndexOut.append(dataToSearchOut.index(varNamesLsOut[ind]))
-                    except ValueError:
-                        self.__printErrorAssign(names)
-                        sys.exit("An error occurred during the assignment of the\
-    name index")
-                else:
-                    print names
-                    # wildcard used, search nestedInd and nestedNames:
-                    # take the prefix and compare for speed
-                    preName = names.split('.')[0]
-                    ind_try = []
-                    #ind_try2 = []
-                    names_try = []
-                    for i, name in enumerate(dataToSearchIn):
-                        if preName in name[0:len(preName)]:
-                                ind_try.append(i)
-                                names_try.append(name)
-                    for i, name in enumerate(dataToSearchOut):
-                        if name  in names_try:
-                            idx = names_try.index(name)
-                            retIndexOut.append(i)
-                            retIndexIn.append(ind_try[idx])
+        for i, name in enumerate(varNamesLsIn):
+            try:
+                retIndexIn.append(dataToSearchIn[name])
+            except KeyError:
+                print 'will net'
+                
+                
+    
+        for i, name in enumerate(findExtra):
+            try:             
+                a = dataToSearchIn[name]
+                b = dataToSearchOut[name]
+                retIndexIn.append(a)
+                retIndexOut.append(b)
+            except KeyError:
+                print 'nicht identisch'
+        
 
         return retIndexIn, retIndexOut
 
@@ -263,27 +312,40 @@ translate your model again."
         #@return modeIndex The corresponding index in the mode list
         #@return transIndMOne The actual (!) index of the transition (for name
         #        mapping!)
-    def __assignModeAndTransIndex(self, actMode, switchTo):
+    def __assignModeAndTransIndex(self, actMode, switchTo, switchID):
         modeIndex = -1
         transIndMOne = -1
         #try to get the indices
+        
+        for transition in actMode.transList:
+            if switchID:
+                if transition.label == int(switchID):
+                    transIndMOne = actMode.transList.index(transition)
+                    new_transition = transition
+                    switchTo = transition.modeIDToSw
+            else:              
+                if transition.modeIDToSw == int(switchTo):
+                    transIndMOne = actMode.transList.index(transition)
+                    new_transition = transition        
+        
         for mode in self.myModel.modeList:
             if mode.modeID == int(switchTo):
                 modeIndex = self.myModel.modeList.index(mode)
                 new_mode = mode
 
-        for transition in actMode.transList:
-            if transition.modeIDToSw == int(switchTo):
-                transIndMOne = actMode.transList.index(transition)
-                new_transition = transition
 
         #catch the errors
+        print 'switch_to'
+        print switchTo
+        print transIndMOne
+        print actMode.modeID
+        #print new_transition.modeIDToSw
         if modeIndex == -1:
             print "Error in __assignModeAndTransIndex:"
             print "Mode not found in list, possible reasons are:"
-            print "1. Is the mode registered in the modeID list? (You try to\
+            print "1. Is the mode registered in the modeID list? (You tried to\
 switch to mode: ", int(switchTo), ")"
-            print "2. Do the simulation terminate with the correct mode ID?"
+            print "2. Does the simulation terminate with the correct mode ID?"
             sys.exit("An error occurred during the assignment of the switch\
 index")
         elif transIndMOne == -1:
@@ -312,6 +374,7 @@ transition index")
     ##Plot all saved variable in a multi color plot (up to 4 colors, one for
     # each mode)
     def __plotResults(self):
+        print 'start plotResults'
         #plot result, if necessary
         xInd = []
         yInd = []
@@ -329,13 +392,16 @@ transition index")
 
         print "close all plots to terminate..."
         self.plotDiffColours(xInd, yInd, xNames, yNames, modeIDInd)
-
+#
     def plotDiffColours(self, xNameInd, yNameInd, xNames, yNames, modeVekt):
+        print 'start plotDiffColours'
         index = 1
         changeInd = []
         toIndNum = []  # vector with all corresponding indices for colour
         for i, dummy in enumerate(self.saved_data[modeVekt]):
+            
             for j, items in enumerate(dummy):
+                
                 if items != index:
                     toIndNum.append(index)
                     index = items
@@ -343,17 +409,21 @@ transition index")
 
         toIndNum.append(index)
         changeInd.append(j)
-        plotData = []   # array for mapping in multiprocessing
+        #plotData = []   # array for mapping in multiprocessing
                         # [0] xData [1] yData [3] xName [4] yName [5] index for
                         # color change
         for i, dummy in enumerate(xNameInd):
-            plotData.append([self.saved_data[xNameInd[i]],
+            myPlotColour([self.saved_data[xNameInd[i]],
                              self.saved_data[yNameInd[i]],
                              xNames[i], yNames[i], (i + 1),
                              changeInd, toIndNum])
-
-        pool = multiprocessing.Pool()
-        pool.map(myPlotColour, plotData)
+        plt.show()
+ #           plotData.append([self.saved_data[xNameInd[i]],
+ #                            self.saved_data[yNameInd[i]],
+ #                            xNames[i], yNames[i], (i + 1),
+ #                            changeInd, toIndNum])
+        #pool = multiprocessing.Pool()
+        #pool.map(myPlotColour, plotData)
 
 
 ## Postprocessing for plot appearance. Select your line colors and axes-labels
@@ -365,23 +435,26 @@ transition index")
 #                data[4] & [5]: Reserved, do not USE!
 #                data[6]: ModeID, responsible for line-color!
 def myPlotColour(data):
+    print 'in myPlotColour'
+    f1 = plt.figure()
     tempstart = 0
     for i, changes in enumerate(data[5]):
+        #print 'i'
         col = ''
         if data[6][i] == 1:
             col = 'b'
         elif data[6][i] == 2:
-            col = 'g'
-        elif data[6][i] == 3:
             col = 'r'
+        elif data[6][i] == 3:
+            col = 'g'
         elif data[6][i] == 4:
             col = 'y'
         plt.plot(data[0][tempstart:changes], data[1][tempstart:changes],
                 col)
         tempstart = changes
         del col
-
+    
     plt.xlabel(data[2])
     plt.ylabel(data[3])
     plt.grid(1)
-    plt.show()
+    
