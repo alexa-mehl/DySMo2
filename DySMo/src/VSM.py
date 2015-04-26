@@ -264,7 +264,7 @@ class VSM:
 			
 			this.__currentTime = lastTimeValue;
 			
-			print("Simulation", this.__currentNum, "ended at", t);
+			print("Simulation", this.__currentNum, "ended at", this.__currentTime);
 			
 			if(this.__currentTime >= this.stopTime):
 				print("Simulation done");
