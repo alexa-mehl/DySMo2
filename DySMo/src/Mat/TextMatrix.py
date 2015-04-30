@@ -46,10 +46,8 @@ class TextMatrix:
 		for i in range(0, len(str)):
 			if(str[i] == 0): #end of string
 				break;
-			if(str[i] == 32): #white space
-				break;
 			result = result + chr(str[i]);
-		return result;
+		return result.rstrip();
 		
 	def SetString(this, y, str):
 		for i in range(0, len(str)):

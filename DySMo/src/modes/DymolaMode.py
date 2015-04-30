@@ -116,7 +116,7 @@ class DymolaMode(ModelicaMode):
 		for x in this.files:
 			this.__openFile(x);
 			
-		g_ddeConv.Exec("cd(\"" + this.get_model().getPath().replace('\\', '/') + "\"");
+		g_ddeConv.Exec("cd(\"" + this.get_model().getPath().replace('\\', '/') + "\")");
 		g_ddeConv.Exec("simulateModel(\"" + this._getModelicaClassString() + "\", stopTime=0, method=\"" + this.solver.name + "\" )");
 		
 		#Delete unnecessary files
@@ -182,14 +182,11 @@ class DymolaMode(ModelicaMode):
 		experiment.SetValue(0, 5, this.solver.stepSize);
 		experiment.SetValue(0, 6, this.__MapSolver(this.solver.name));
 		
-		for key in this._init:
-			value = this._init[key];
+		for i in range(0, names.GetNumberOfStrings()):
+			varName = names.GetString(i);
 			
-			for i in range(0, names.GetNumberOfStrings()):
-				if(names.GetString(i) == key):
-					break;
-			
-			values.SetValue(1, i, value);
+			if varName in this._init:				
+				values.SetValue(1, i, this._init[varName])
 			
 		#Set correct types, else Dymola won't read the file			
 		outMat.GetMatrix("settings").SetDesiredOutputPrecision(2);
