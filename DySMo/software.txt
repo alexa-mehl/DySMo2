@@ -1,0 +1,52 @@
+Please use these download links and versions.
+DySMo is not tested with other versions.
+Especially the PyWin package did not always work.
+We also experienced some problems with 64 bit versions, please switch to 32 bit versions in case.
+For hints on other versions that work I will be gratefull.
+
+Windows 32 bit:
+python:
+https://www.python.org/ftp/python/3.4.2/python-3.4.2.msi
+
+pywin32:
+http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py3.4.exe/download
+
+numpy:
+http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superpack-python3.4.exe/download
+
+matplotlib:
+https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2.win32-py3.4.exe
+
+pyparsing:
+Please choose win32 py3.4 version from here:
+https://pypi.python.org/pypi/pyparsing/2.0.3
+
+The following packages are only available as sources and need to be compiled manually:
+dateutil:
+https://pypi.python.org/pypi/python-dateutil/2.4.0
+six:
+https://pypi.python.org/pypi/six/1.9.0
+
+
+
+
+Windows 64 bit:
+python:
+https://www.python.org/ftp/python/3.4.2/python-3.4.2.amd64.msi
+
+pywin32:
+http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win-amd64-py3.4.exe/download
+
+numpy:
+Unfortunately, you have to either find an unofficial 64 bit or compile the source yourself.
+
+matplotlib:
+http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2.win-amd64-py3.4.exe/download
+
+The following packages are only available as sources and need to be compiled manually:
+dateutil:
+https://pypi.python.org/pypi/python-dateutil/2.4.0
+six:
+https://pypi.python.org/pypi/six/1.9.0
+pyparsing:
+https://pypi.python.org/pypi/pyparsing/2.0.3
