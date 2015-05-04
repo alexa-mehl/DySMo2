@@ -1,17 +1,24 @@
-The framework â€˜DySMoâ€™ supports the user to create variable-structure models which can be simulated in different modeling environments. The framework is based on Python and uses some Python packages (see software.txt). 
-DySMo already supports the simulation environments Dymola and OpenModelica (the old version of DySMo also supported Simulink). Dymola is tested the most for now. In this framework you can reuse your existing models and create a variable-structure models to either save simulation time, increase your model accuracy or you might just need the variable-structure approach to simulate your model at all.
-DySMo has been tested with different examples, a few of them are given as examples (samples folder). The version is a beta Version. We are glad over every advice on how to improve the framework. If you need more functionality or have questions you can always contact us at a.mehlhase@tu-berlin.de, we will be happy to help and implement what is needed. 
+Start here with your structural dynamics simulation experience.
+This framework ‘DySMo’ supports the user to create variable-structure models which can be simulated in different modeling environments. The framework is based on Python and uses some Python packages (see the installation guide). 
+DySMo already supports the simulation environments Dymola, OpenModelica and Simulink. Dymola is tested the most for now. In this framework you can reuse your existing models and create a variable-structure model out of it to either save simulation time, increase your model accuracy or you might just need the variable-structure approach to simulate your model at all.
+DySMo has been tested with different examples, a few of them are given as examples, but it is not fully tested. It is still a Beta-Version which needs a lot of work. We are glad over every advice and help you can give. If you need more functionality or have questions you can always contact us at a.mehlhase@tu-berlin.de, we will be happy to help and implement what is needed. 
 
-DySMo is only tested in Windows!
+
+
 
 ==============================
-To install DySMo:
+To run the delivered examples:
 
-1. Use the installer "Install DySMo.exe" or copy the DySMo-folder (sample-folder is optional)
-2. In the config.cfg set the path to Dymola and OpenModelica (at least one is needed)
-3. Set the path to your Python installation in run.bat (or set the path to Python as environment variable)
+1. Install the delivered python version and all packages (see software.txt for the download links)
 
-There are different possibilities to simulate a model:
+2. Set environment variables (refer to Install-Guide in Documentation)
 
-1: Use the run.bat. Use the explorer and drag&drop the config.py file, in which your model is described, into the run.bat
-2: Start Python in the source folder (or any other folder) and use the command "DySMo.py config.py" (depending on your settings and the current path Python is started in, you need to use the absolute path to DySMo.py (in the src-folder) and the the config.py.
+3. Set all paths and desiered tools in "userSettings.py"
+
+4. Build your solution with "python setup.py build" in your command window
+
+5. Set the model you like to simulate in "scripts/main.py"
+
+6. Set the model parameters and transitions in "scripts/<modelName>.py"
+
+7. Run the simulation with "python main.py"
