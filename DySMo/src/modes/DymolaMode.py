@@ -96,6 +96,8 @@ class DymolaMode(ModelicaMode):
 			return 13;
 		elif(method == "rkfix4"):
 			return 14;
+		elif(method == "cvode"):
+			return 29;
 		return 15;
 			
 	def __openFile(this, fileName):
@@ -181,6 +183,8 @@ class DymolaMode(ModelicaMode):
 		experiment.SetValue(0, 4, this.solver.tolerance);
 		experiment.SetValue(0, 5, this.solver.stepSize);
 		experiment.SetValue(0, 6, this.__MapSolver(this.solver.name));
+		
+		Log_LogLine("\n \n \n Simulation Settings:\n    StartTime:" + str(startTime) + ",\n    Tolerance:" + str(this.solver.tolerance) + ",\n    Solver: " + str(this.solver.name));
 		
 		for i in range(0, names.GetNumberOfStrings()):
 			varName = names.GetString(i);
