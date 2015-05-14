@@ -230,6 +230,7 @@ class VSM:
 	def simulate(this):
 		readTime = 0;
 		simTime = 0;
+		modeTimes = ''
 		
 		this.__clearResult();
 		this.__preprocess();
@@ -241,13 +242,14 @@ class VSM:
 			this.__actMode.save_init(this.__currentTime);
 			
 			#Run it
-			print("Running simulation", this.__currentNum, "ModeID:", this.__actMode.get_id(), "Time:", this.__currentTime);
+			print("Running simulation", this.__currentNum+1, "ModeID:", this.__actMode.get_id(), "Time:", this.__currentTime);
 			t1 = time.clock();
 			this.__actMode.simulate();
 			t2 = time.clock();
 			simTime += (t2-t1);
-			Log_LogLine("Simulation " + str(this.__currentNum) + " of mode " + str(this.__actMode.get_id()) + " took " + str(t2 - t1) + " seconds.");
-			
+			string = "Simulation " + str(this.__currentNum+1) + " of mode " + str(this.__actMode.get_id()) + " took " + str(t2 - t1) + " seconds"
+			Log_LogLine(string);
+			modeTimes = modeTimes + "\n"+string
 			this.__actMode.set_lastSimulationNumber(this.__currentNum);
 			
 			t1 = time.clock();
@@ -255,6 +257,7 @@ class VSM:
 			readTime += (time.clock() - t1);
 			this.__observe(result.get_values());
 			
+		
 			observTime = this.__observer["time"];
 			observTime = observTime[len(observTime)-1];
 			lastTimeValue = observTime[len(observTime)-1];
@@ -263,8 +266,9 @@ class VSM:
 				raise SimulationRanBackwardsException();
 			
 			this.__currentTime = lastTimeValue;
-			
-			print("Simulation", this.__currentNum, "ended at", this.__currentTime);
+			string = "Simulation "+ str(this.__currentNum+1) + " ended at "+ str(this.__currentTime)
+			Log_LogLine(string+"\n===================================\n\n\n")
+			print(string);
 			
 			if(this.__currentTime >= this.stopTime):
 				print("Simulation done");
@@ -278,11 +282,14 @@ class VSM:
 			this.__transitionActive(transition);
 		
 			this.__currentNum += 1; #next sim
-			
-		this.__drawPlots();
-		this.__save_observer();
-		
 		Log_LogLine("");
 		Log_LogLine("Overall timing info");
+		Log_LogLine(modeTimes)
 		Log_LogLine("Reading simulation results: " + str(readTime) + " seconds.");
 		Log_LogLine("Simulation time: " + str(simTime) + " seconds");
+		
+		this.__save_observer();	
+		this.__drawPlots();
+		
+		
+		
