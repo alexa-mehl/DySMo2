@@ -1,5 +1,5 @@
 within ;
-model Ball
+package Ball
 
 model FlyingBall
 
