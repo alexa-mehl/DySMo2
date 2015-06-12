@@ -8,7 +8,6 @@ model.observe = ['x', 'h'];
 
 #First mode
 mode1 = DymolaMode();
-#mode1 = OpenModelicaMode();
 
 mode1.modeRef = "bounceWall.Ball_struc";
 mode1.files = ["bounceWall.mo"];
@@ -52,20 +51,21 @@ mode3.transitions = [trans3_1];
 model.modes = [mode1, mode2, mode3];
 
 
-plot2 = ModePlot();
-plot2.vars = ['h'];
-plot2.drawGrid = 1;
-plot2.labelXAxis = "time";
-plot2.labelYAxis = "h";
-plot2.fileName = 'modeplot.png';
+plot1 = ModePlot();
+plot1.vars = ['h'];
+plot1.drawGrid = 1;
+plot1.labelXAxis = "time";
+plot1.labelYAxis = "h";
+plot1.fileName = 'modeplot.png';
+plot1.show = True;
+
+plot2 = VariablePlot();
+plot2.vars = {'x' : Color.MAGENTA};
+plot2.xAxisVar = 'time';
+plot2.drawGrid = 1; #0 = no, 1 = yes
+plot2.labelXAxis = "x";
+plot2.labelYAxis = "y";
 plot2.show = True;
 
-plot3 = VariablePlot();
-plot3.vars = {'x' : Color.MAGENTA};
-plot3.xAxisVar = 'time';
-plot3.drawGrid = 1; #0 = no, 1 = yes
-plot3.labelXAxis = "x";
-plot3.labelYAxis = "y";
-
 #Set the plots
-model.plots = [plot2, plot3];
+model.plots = [plot1, plot2];

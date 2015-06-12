@@ -1,5 +1,5 @@
 within ;
-package dominospiel
+package domino
 import Modelica.SIunits.*;
 constant Real pi= Modelica.Constants.pi;
   model dominostein
@@ -66,4 +66,4 @@ constant Real pi= Modelica.Constants.pi;
   annotation (uses(Modelica(version="3.2")),
     version="1",
     conversion(noneFromVersion=""));
-end dominospiel;
+end domino;
