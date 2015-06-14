@@ -4,6 +4,9 @@ Especially the PyWin package did not always work.
 We also experienced some problems with 64 bit versions, please switch to 32 bit versions in case.
 For hints on other versions that work I will be gratefull.
 
+WinPython 64bit 3.4.3.3 (portable Version)
+
+
 Windows 32 bit:
 python:
 https://www.python.org/ftp/python/3.4.2/python-3.4.2.msi

@@ -8,7 +8,6 @@ model.observe = ['x', 'y'];
 
 #First mode
 mode1 = DymolaMode();
-#mode1 = OpenModelicaMode();
 mode1.solver.tolerance = 1e-4;
 mode1.modeRef = "pendulum.Pendulum_struc";
 mode1.files = ["pendulum.mo"];
@@ -16,7 +15,6 @@ mode1.synonym = {'x' : 'x', 'y' : 'y'};
 
 #Second mode
 mode2 = DymolaMode();
-#mode2 = OpenModelicaMode();
 mode2.solver.tolerance = 1e-4;
 mode2.modeRef = "pendulum.Ball_struc";
 mode2.files = ["pendulum.mo"];
@@ -64,6 +62,7 @@ plot3.xAxisVar = 'x';
 plot3.drawGrid = 1; #0 = no, 1 = yes
 plot3.labelXAxis = "x";
 plot3.labelYAxis = "y";
+plot3.show = True;
 
 #Set the plots
 model.plots = [plot1, plot2, plot3];

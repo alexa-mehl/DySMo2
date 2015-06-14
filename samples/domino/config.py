@@ -68,7 +68,7 @@ model.observe = ['stones[1].phi','stones[2].phi','stones[1].omega']
 
 mode = DymolaMode()
 mode.files = ['dominospiel.mo'] # Modelica Dateien 
-mode.modeRef = "domino.stones" # Modelica-Model
+mode.modeRef = "dominospiel.stones" # Modelica-Model
 mode.synonym={'stones[1].phi':'stones[1].phi', 'stones[1].omega':'stones[1].omega'}
 
 # Stein getroffen
@@ -102,5 +102,16 @@ plot1.labelYAxis = "y-axis";
 plot1.fileName = 'variableplot.png';
 plot1.show = True;
 
+plot2 = ModePlot();
+plot2.vars = ['stones[1].phi'];
+plot2.drawGrid = 1;
+plot2.labelXAxis = "time";
+plot2.labelYAxis = "phi";
+plot2.fileName = 'modeplot.png';
+plot2.show = True;
+
+
+
+
 #Set the plots
-model.plots = [plot1];
+model.plots = [plot1, plot2];
