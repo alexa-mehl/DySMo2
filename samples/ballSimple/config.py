@@ -1,6 +1,6 @@
 #Model
 model.default_solver = Solver("dassl");
-model.translate = False;
+model.translate = True;
 model.init = {};
 model.startTime = 0;
 model.stopTime = 30;
@@ -17,6 +17,9 @@ mode1.synonym = {'v' : 'v', 'h' : 'h'};
 #Transition from mode 1 to mode 1
 def bounce(actMode, oldMode):
 	v = oldMode.get_endValue('v');
+	time = oldMode.get_endValue('time');
+	print('time test')
+	print(time)
 	actMode.set_initialValue('v', v * (-1));
 
 #Transition from mode 1 to mode 2

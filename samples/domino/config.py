@@ -67,8 +67,8 @@ model.startTime = 0 # Startzeit
 model.observe = ['stones[1].phi','stones[2].phi','stones[1].omega']  
 
 mode = DymolaMode()
-mode.files = ['dominospiel.mo'] # Modelica Dateien 
-mode.modeRef = "dominospiel.stones" # Modelica-Model
+mode.files = ['domino.mo'] # Modelica Dateien 
+mode.modeRef = "domino.stones" # Modelica-Model
 mode.synonym={'stones[1].phi':'stones[1].phi', 'stones[1].omega':'stones[1].omega'}
 
 # Stein getroffen
