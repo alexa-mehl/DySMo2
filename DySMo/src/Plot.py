@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,7 +20,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from Definitions import Color;
+from Definitions import *;
 
 class Plot:
 	#Constructor
@@ -50,4 +50,4 @@ class Plot:
 		
 	#Abstract methods
 	def getColor(this, modeId, simId, varName):
-		raise Exception("Method 'getColor' of Class 'Plot' is abstract.");
+		raise NotImplementedError("Method 'getColor' of Class 'Plot' is abstract.");

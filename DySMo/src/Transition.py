@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,23 +20,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.IllegalMappingException import IllegalMappingException;
-
 class Transition:
 	#Constructor
 	def __init__(this):
 		this.__id = None;
 		
-	#Private methods
-	def __mapStar(this, oldMode, newMode, valuesToSet):
-		for key in oldMode._end:
-			if(newMode.has_initValue(key)):
-				valuesToSet[key] = oldMode.get_endValue(key);
-		
 	#Public methods
-	def get_id(this):
-		return this.__id;
-		
 	def init(this, id):
 		this.__id = id;
 		

@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -21,41 +21,47 @@
 """
 
 #Lib
-import imp;
 import os;
-import os.path;
 import sys;
+import PySimLib;
 #Local
-from __modes__ import *;
-from __plots__ import *;
-from Config import Config;
 from Definitions import *;
-from Solver import Solver;
+from exceptions.ModeException import ModeException;
+from Mode import Mode;
+from Plots import *;
 from Transition import Transition;
 import VSM;
-from exceptions.ModeException import ModeException;
-from Log import *;
 
+
+
+#Functions
 def ExecPythonFile(fileName):
 	file = open(fileName);
 	content = file.read();
 	code = compile(content, fileName, 'exec');
 	exec(code);
 	
-#Load modes
-files = os.listdir("modes");
-#for x in files:
-#	if os.path.isfile("modes/" + x):
-#		ExecPythonFile("modes/" + x);
-#		__import__("modes." + x);
+#Functions for config script
+def Solver(name):
+	return PySimLib.FindSolver(name);
+
+
+#paths
 
 modelPath = os.path.abspath(os.path.join(sys.argv[1], os.pardir));
 configPath = os.path.abspath(sys.argv[1]);
 
-Log_Init(configPath + ".log");
+#Init log file
+
+PySimLib.Log.SetTarget(open(configPath + ".log", "w"));
+
+#instantiate model
 model = VSM.VSM(modelPath); #The global model instance
 
-ExecPythonFile(sys.argv[1]); #Load config file
+#execute config file
+ExecPythonFile(sys.argv[1]);
+
+#run simulation
 os.chdir(modelPath); #switch to model path
 try:
 	model.simulate(); #Simprocess
