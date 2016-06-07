@@ -1,6 +1,6 @@
 #Model
 model.default_solver = Solver("dassl");
-model.default_tool = "Dymola";
+#model.default_tool = "Dymola";
 model.translate = True; # compile models
 model.init = {};
 model.startTime = 0;
@@ -10,6 +10,7 @@ model.observe = ['v', 'h'];
 #First mode
 mode1 = Mode();
 
+#mode1.tool = "OpenModelica";
 mode1.modeRef = "Ball.FlyingBall";
 mode1.files = ["Ball.mo"];
 mode1.synonym = {'v' : 'v', 'h' : 'h'};
