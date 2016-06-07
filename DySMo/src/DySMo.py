@@ -30,7 +30,7 @@ from exceptions.ModeException import ModeException;
 from Mode import Mode;
 from Plots import *;
 from Transition import Transition;
-import VSM;
+from VSM import VSM;
 
 
 
@@ -44,27 +44,39 @@ def ExecPythonFile(fileName):
 #Functions for config script
 def Solver(name):
 	return PySimLib.FindSolver(name);
+	
+func = VSM.simulate;
+	
+#Checks
+if(len(sys.argv) == 1):
+	print("Please provide a path to a variable-structure simulatiom description file as argument.");
+	print("Exiting...");
+	exit();
+	
+if(len(sys.argv) == 3):
+	if(sys.argv[2] == "clean"):
+		func = VSM.clean;
+	else:
+		print("You specified the following unknown argument:", sys.argv[2]);
+		print("Exiting...");
+		exit();
 
 
 #paths
-
-modelPath = os.path.abspath(os.path.join(sys.argv[1], os.pardir));
 configPath = os.path.abspath(sys.argv[1]);
 
-#Init log file
-
-PySimLib.Log.SetTarget(open(configPath + ".log", "w"));
-
 #instantiate model
-model = VSM.VSM(modelPath); #The global model instance
+model = VSM(configPath); #The global model instance
 
 #execute config file
 ExecPythonFile(sys.argv[1]);
 
 #run simulation
-os.chdir(modelPath); #switch to model path
+os.chdir(model.getPath()); #switch to model path
 try:
-	model.simulate(); #Simprocess
+	func(model);
 except ModeException as e:
 	print("ERROR: ", e);
 	print("See Log file for details.");
+	
+model.shutdown();

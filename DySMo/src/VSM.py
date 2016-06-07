@@ -29,9 +29,11 @@ import time;
 
 class VSM:
 	#Constructor
-	def __init__(this, path):
+	def __init__(this, configPath):
 		#Private members
-		this.__path = path;
+		this.__path = os.path.abspath(os.path.join(configPath, os.pardir));
+		this.__logPath = configPath + ".log";
+		this.__logFile = open(this.__logPath, "w");
 		this.__actMode = None; #current mode
 		this.__compiledModes = {};
 		this.__currentTime = 0;
@@ -42,22 +44,10 @@ class VSM:
 		this.translate = True;
 		this.default_tool = None;
 		
-	#Private methods
-	def __clearResult(this):
-		resultPath = this.__path + os.sep + "result";
-		#check whether the sub directory already exists
-		if os.path.exists(resultPath):
-			#delete all files in resultFolder and create an empty folder
-			shutil.rmtree(resultPath);
-			time.sleep(2); #ugly... but somehow os.makedirs fails sometimes with permission error when there is not enough time between shutil.rmtree and os.makedirs
-			
-		os.makedirs(resultPath);
+		#Init log file
+		PySimLib.Log.SetTarget(this.__logFile);
 		
-		#make sure output dir exists
-		outputPath = this.__path + os.sep + "output";
-		if not(os.path.exists(outputPath)):
-			os.makedirs(outputPath);
-		
+	#Private methods		
 	def __compileMode(this, mode):
 		if(mode not in this.__compiledModes):
 			if(this.translate):
@@ -66,6 +56,18 @@ class VSM:
 				PySimLib.Log.Line("Compilation of mode " + str(mode.get_id()) + " took " + str(time.clock() - t1) + " seconds.");
 			this.__compiledModes[mode] = True;
 			mode.read_init();
+			
+	def __deleteFileSafe(this, folder):
+		#check whether the sub directory already exists
+		if(os.path.exists(folder)):
+			#delete all files in resultFolder and create an empty folder
+			os.remove(folder);
+			
+	def __deleteFolderSafe(this, folder):
+		#check whether the sub directory already exists
+		if(os.path.exists(folder)):
+			#delete all files in resultFolder and create an empty folder
+			shutil.rmtree(folder);
 			
 	def __drawPlots(this):
 		show = False;
@@ -92,6 +94,12 @@ class VSM:
 		if(show):
 			pylab.show();
 			
+	def __getOutputPath(this):
+		return this.__path + os.sep + "output";
+			
+	def __getResultPath(this):
+		return this.__path + os.sep + "result";
+			
 	def __init(this):
 		#Init observer
 		for k in this.observe:
@@ -116,6 +124,18 @@ class VSM:
 				
 		this.__observer["time"].append(simResults["time"]);		
 		this.__observer["modeID"].append(this.__actMode.get_id());
+		
+	def __prepareFolders(this):
+		resultPath = this.__getResultPath();
+		
+		this.__deleteFolderSafe(resultPath);
+		time.sleep(1); #ugly... but somehow os.makedirs fails sometimes with permission error when there is not enough time between shutil.rmtree and os.makedirs
+		os.makedirs(resultPath);
+		
+		#make sure output dir exists
+		outputPath = this.__getOutputPath();
+		if not(os.path.exists(outputPath)):
+			os.makedirs(outputPath);
 		
 	def __preprocess(this):
 		#Numerate modes
@@ -230,6 +250,13 @@ class VSM:
 			transition.init_function(this.__actMode, oldMode);
 	
 	#Public methods
+	def clean(this):
+		this.shutdown();
+		
+		this.__deleteFileSafe(this.__logPath);
+		this.__deleteFolderSafe(this.__getOutputPath());
+		this.__deleteFolderSafe(this.__getResultPath());	
+		
 	def getCurrentSimulationNumber(this):
 		return this.__currentNum;
 		
@@ -242,12 +269,17 @@ class VSM:
 	def set_active_mode(this, newMode):
 		this.__actMode = newMode;
 		
+	def shutdown(this):
+		PySimLib.Log.SetTarget(None);
+		if(not(this.__logFile is None)):
+			this.__logFile.close();
+		
 	def simulate(this):
 		simTime = 0;
 		readTime = 0;
 		
 		this.__init();
-		this.__clearResult();
+		this.__prepareFolders();
 		this.__preprocess();
 		
 		this.__currentTime = this.startTime;
