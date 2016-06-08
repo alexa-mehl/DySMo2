@@ -322,6 +322,7 @@ class VSM:
 		PySimLib.Log.Line("Overall timing info");
 		PySimLib.Log.Line("Reading simulation results: " + str(readTime) + " seconds.");
 		PySimLib.Log.Line("Simulation time: " + str(simTime) + " seconds");
+		PySimLib.Log.Line("Total: " + str(readTime + simTime) + " seconds");
 		#TODO compile time
 		
 		this.__save_observer();
