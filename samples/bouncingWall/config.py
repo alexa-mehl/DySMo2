@@ -7,18 +7,19 @@ model.stopTime = 5;
 model.observe = ['x', 'h'];
 
 #First mode
-mode1 = DymolaMode();
+mode1 = Mode();
 
 mode1.modeRef = "bounceWall.Ball_struc";
 mode1.files = ["bounceWall.mo"];
 mode1.synonym = {'x' : 'x', 'h' : 'h'};
 
-mode2 = DymolaMode();
+mode2 = Mode();
+
 mode2.modeRef = "bounceWall.Contact_struc";
 mode2.files = ["bounceWall.mo"];
 mode2.synonym = {'x':'x','h': 'damper.s_rel'};
 
-mode3 = DymolaMode();
+mode3 = Mode();
 mode3.modeRef = "bounceWall.Contact_wall";
 mode3.files = ["bounceWall.mo"];
 mode3.synonym = {'x':'x', 'h':'h'};
@@ -56,7 +57,7 @@ plot1.vars = ['h'];
 plot1.drawGrid = 1;
 plot1.labelXAxis = "time";
 plot1.labelYAxis = "h";
-plot1.fileName = 'modeplot.png';
+plot1.fileName = 'h.png';
 plot1.show = True;
 
 plot2 = VariablePlot();
@@ -65,6 +66,7 @@ plot2.xAxisVar = 'time';
 plot2.drawGrid = 1; #0 = no, 1 = yes
 plot2.labelXAxis = "x";
 plot2.labelYAxis = "y";
+plot2.fileName = 'xy.png';
 plot2.show = True;
 
 #Set the plots
