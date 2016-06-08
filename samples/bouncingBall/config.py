@@ -7,14 +7,15 @@ model.stopTime = 10;
 model.observe = ['v', 'h'];
 
 #First mode
-mode1 = DymolaMode();
+mode1 = Mode();
 
 mode1.modeRef = "BouncingBall.Ball_struc";
 mode1.files = ["BouncingBall.mo"];
 mode1.synonym = {'v' : 'v', 'h' : 'h'};
 
 #Second mode
-mode2 = DymolaMode();
+mode2 = Mode();
+
 mode2.modeRef = "BouncingBall.Contact_struc";
 mode2.files = ["BouncingBall.mo"];
 mode2.synonym = {'v' : 'v', 'h' : 'h'};
@@ -40,7 +41,7 @@ plot1.vars = ['h'];
 plot1.drawGrid = 1;
 plot1.labelXAxis = "time";
 plot1.labelYAxis = "v";
-plot1.fileName = 'modeplot.png';
+plot1.fileName = 'v.png';
 plot1.show = True;
 
 plot2 = VariablePlot();
@@ -49,6 +50,7 @@ plot2.xAxisVar = 'time';
 plot2.drawGrid = 1; #0 = no, 1 = yes
 plot2.labelXAxis = "x";
 plot2.labelYAxis = "y";
+plot2.fileName = "xy.png";
 plot2.show = True;
 
 #Set the plots
