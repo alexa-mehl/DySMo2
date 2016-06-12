@@ -327,3 +327,9 @@ class VSM:
 		
 		this.__save_observer();
 		this.__drawPlots();
+		
+		#close tools
+		for m in this.modes:
+			m.tool.Close();
+		if(not this.default_tool is None):
+			this.default_tool.Close();
