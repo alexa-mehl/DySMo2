@@ -1,5 +1,6 @@
 #Model
 model.default_solver = Solver("dassl");
+model.default_solver.tolerance = 3e-05;
 model.translate = True;
 model.init = {};
 model.startTime = 0;
@@ -7,15 +8,13 @@ model.stopTime = 8;
 model.observe = ['x', 'y'];
 
 #First mode
-mode1 = DymolaMode();
-mode1.solver.tolerance = 3e-05;
+mode1 = Mode();
 mode1.modeRef = "NailPendulum.pendulum_struc";
 mode1.files = ["NailPendulum.mo"];
 mode1.synonym = {'x' : 'x', 'y' : 'y'};
 
 #Second mode
-mode2 = DymolaMode();
-mode2.solver.tolerance = 3e-05;
+mode2 = Mode();
 mode2.modeRef = "NailPendulum.ball_struc";
 mode2.files = ["NailPendulum.mo"];
 mode2.synonym = {'x' : 'x', 'y' : 'y'};

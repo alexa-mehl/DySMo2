@@ -1,11 +1,11 @@
 # Dominostein trifft anderen Stein
 def crash(act, old):
 	import math
-	active =  int(old.get_endValue('active') +1)
-	fallen= int(old.get_endValue('fallen'))
+	active =  int(old.get_parameter('active') +1)
+	fallen= int(old.get_parameter('fallen'))
 				
-	D_val = old.get_endValue('D')
-	Z_val = old.get_endValue('stones[1].Z')
+	D_val = old.get_parameter('D')
+	Z_val = old.get_parameter('stones[1].Z')
 
 	phipush = math.asin(D_val/Z_val);
 	KO = (1+math.cos(2*phipush))/2;
@@ -66,8 +66,8 @@ model.stopTime = 5 # Stopzeit
 model.startTime = 0 # Startzeit
 model.observe = ['stones[1].phi','stones[2].phi','stones[1].omega']  
 
-mode = DymolaMode()
-mode.files = ['dominospiel.mo'] # Modelica Dateien 
+mode = Mode()
+mode.files = ['domino.mo'] # Modelica Dateien 
 mode.modeRef = "domino.stones" # Modelica-Model
 mode.synonym={'stones[1].phi':'stones[1].phi', 'stones[1].omega':'stones[1].omega'}
 

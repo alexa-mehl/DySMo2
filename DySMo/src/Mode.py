@@ -72,6 +72,9 @@ class Mode:
 	def get_id(this):
 		return this.__id;
 		
+	def get_parameter(this, key):
+		return this.__mdlObj.parameters[key];
+		
 	def has_endValue(this, varName):
 		return varName in this.__mdlObj.variables;
 		
@@ -148,6 +151,13 @@ class Mode:
 		
 	def set_initialValue(this, varName, value):
 		this.__mdlObj.variables[varName].start = value;
+		
+	def set_parameter(this, name, value):
+		this.__mdlObj.parameters[name] = value;
+		
+	def set_parameters(this, params):
+		for key in params:
+			this.set_parameter(key, params[key]);
 		
 	#Simulates the mode and moves the result file to the result folder.
 	#
