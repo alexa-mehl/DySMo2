@@ -1,7 +1,7 @@
 #Model
 model.default_solver = Solver("dassl");
 model.default_solver.numberOfIntervals = 500;
-model.translate = False;
+model.translate = True;
 model.init = {};
 model.startTime = 0;
 model.stopTime = 100000;
@@ -31,14 +31,14 @@ def less(actMode, oldMode):
 			
 
 #First mode
-mode1 = DymolaMode();
+mode1 = Mode();
 mode1.modeRef = "pipe.elements2";
 mode1.files = ["pipe.mo"];
 mode1.synonym = {'T1' : 'm1.T', 'CPUtime' : 'CPUtime'};
 
 
 #Second mode
-mode2 = DymolaMode();
+mode2 = Mode();
 mode2.modeRef = "pipe.elements10";
 mode2.files = ["pipe.mo"];
 mode2.synonym = {'T1' : 'm1.T', 'CPUtime' : 'CPUtime'};
