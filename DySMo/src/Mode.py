@@ -72,6 +72,9 @@ class Mode:
 	def get_id(this):
 		return this.__id;
 		
+	def get_model(this):
+		return this.__vsmModel;
+		
 	def get_parameter(this, key):
 		return this.__mdlObj.parameters[key];
 		
@@ -143,11 +146,7 @@ class Mode:
 	#
 	#Returns: SimulationResult object
 	def read_result(this, simNum):
-		t1 = time.clock();
-		result = this.tool.ReadResult(this.__simObjs[simNum]);
-		t2 = time.clock();
-		
-		return result, t2 - t1;
+		return this.tool.ReadResult(this.__simObjs[simNum]);
 		
 	def set_initialValue(this, varName, value):
 		this.__mdlObj.variables[varName].start = value;
@@ -167,10 +166,10 @@ class Mode:
 	def simulate(this):
 		simObj = PySimLib.Simulation(this.__mdlObj, this.__vsmModel.getCurrentSimulationNumber());
 		
-		simObj.startTime = this.__vsmModel.getCurrentTime();
+		simObj.startTime = this.__vsmModel.currentTime;
 		simObj.stopTime = this.__vsmModel.stopTime;
 		
-		print("Running simulation", simObj.GetSimNumber(), "ModeID:", this.get_id(), "Time:", this.__vsmModel.getCurrentTime());
+		print("Running simulation", simObj.GetSimNumber(), "ModeID:", this.get_id(), "Time:", this.__vsmModel.currentTime);
 		t1 = time.clock();
 		this.tool.Simulate(simObj);
 		t2 = time.clock();

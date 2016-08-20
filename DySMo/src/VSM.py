@@ -36,11 +36,11 @@ class VSM:
 		this.__logFile = open(this.__logPath, "w");
 		this.__actMode = None; #current mode
 		this.__compiledModes = {};
-		this.__currentTime = 0;
 		this.__currentNum = 1; #sim counter
 		this.__observer = {};
 		
 		#Public members
+		this.currentTime = 0;
 		this.translate = True;
 		this.default_tool = None;
 		
@@ -260,9 +260,6 @@ class VSM:
 	def getCurrentSimulationNumber(this):
 		return this.__currentNum;
 		
-	def getCurrentTime(this):
-		return this.__currentTime;
-		
 	def getPath(this):
 		return this.__path;
 		
@@ -282,12 +279,15 @@ class VSM:
 		this.__prepareFolders();
 		this.__preprocess();
 		
-		this.__currentTime = this.startTime;
+		this.currentTime = this.startTime;
 		
-		while(this.__currentTime < this.stopTime):
+		while(this.currentTime < this.stopTime):
 			#Run sim
 			simTime += this.__actMode.simulate();
-			result, dt = this.__actMode.read_last_result();
+			t1 = time.clock();
+			result = this.__actMode.read_last_result();
+			t2 = time.clock();
+			dt = t2 - t1;
 			readTime += dt;
 			
 			#process results
@@ -297,15 +297,15 @@ class VSM:
 			observTime = observTime[len(observTime)-1];
 			lastTimeValue = observTime[len(observTime)-1];
 			
-			if(lastTimeValue < this.__currentTime):
+			if(lastTimeValue < this.currentTime):
 				raise SimulationRanBackwardsException();
 			
-			this.__currentTime = lastTimeValue;
-			string = "Simulation "+ str(this.__currentNum) + " ended at "+ str(this.__currentTime)
+			this.currentTime = lastTimeValue;
+			string = "Simulation "+ str(this.__currentNum) + " ended at "+ str(this.currentTime)
 			PySimLib.Log.Line(string+"\n===================================\n\n\n")
 			print(string);
 			
-			if(this.__currentTime >= this.stopTime):
+			if(this.currentTime >= this.stopTime):
 				print("Simulation done");
 				break;
 				

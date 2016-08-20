@@ -67,6 +67,7 @@ model.startTime = 0 # Startzeit
 model.observe = ['stones[1].phi','stones[2].phi','stones[1].omega']  
 
 mode = Mode()
+mode.tool = 'Dymola'; #need to be able to set structural parameters
 mode.files = ['domino.mo'] # Modelica Dateien 
 mode.modeRef = "domino.stones" # Modelica-Model
 mode.synonym={'stones[1].phi':'stones[1].phi', 'stones[1].omega':'stones[1].omega'}
