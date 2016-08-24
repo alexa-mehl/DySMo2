@@ -20,37 +20,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from Definitions import *;
+from exceptions.ModeException import ModeException;
 
-class Plot:
+class MissingTransitionIdException(ModeException):
 	#Constructor
-	def __init__(this):
-		this.drawGrid = True;
-		this.labelXAxis = "";
-		this.labelYAxis = "";
-		this.xAxisVar = 'time';
+	def __init__(this, mode):
+		ModeException.__init__(this);
 		
-	#Public methods
-	def colorToColorString(this, color):
-		if(color == Color.BLACK):
-			return 'k';
-		if(color == Color.BLUE):
-			return 'b';
-		if(color == Color.CYAN):
-			return 'c';
-		if(color == Color.GREEN):
-			return 'g';
-		if(color == Color.MAGENTA):
-			return 'm';
-		if(color == Color.RED):
-			return 'r';
-		#if(color == Color.WHITE):
-			#return 'w';
-		if(color == Color.YELLOW):
-			return 'y';
+		this.__mode = mode;
 		
-		raise Exception("illegal color");
-		
-	#Abstract methods
-	def getColor(this, modeId, simId, varName):
-		raise NotImplementedError("Method 'getColor' of Class 'Plot' is abstract.");
+	#Magic methods
+	def __str__(this):
+		return str(this.__mode) + " does not contain the neccessary 'transitionId' variable. Please include it in the model.";

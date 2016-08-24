@@ -36,10 +36,16 @@ class Mode:
 		this.__simObjs = {}; #dict containing all simulation objects for this mode
 		
 		#Public members
-		this.modeRef = ""; #Identifier of the mode
+		this.files = [];
+		this.modeRef = None; #Identifier of the mode
 		this.solver = None; #Solver settings for this mode
+		this.synonym = {};
 		this.tool = None; #PySimLib tool object for simulating this mode
 		this.transitions = []; #Transitions that lead out of this mode
+		
+	#Magic methods
+	def __str__(this):
+		return "Mode " + str(this.__id);
 		
 	#Public methods
 	#Called by the framework when this mode should compile itself.
@@ -60,6 +66,10 @@ class Mode:
 	#Returns: Outgoing transition object
 	def find_transition(this):
 		transId = int(this.get_endValue("transitionId"));
+		
+		if(transId > len(this.transitions)):
+			from exceptions.InvalidTransitionException import InvalidTransitionException;
+			raise InvalidTransitionException(this, transId);
 		
 		return this.transitions[transId-1];
 		
@@ -90,6 +100,8 @@ class Mode:
 	#
 	#Returns: Nothing
 	def init(this, model, modeId):
+		from exceptions.InvalidModeModelException import InvalidModeModelException;
+		
 		this.__vsmModel = model;
 		this.__id = modeId;
 		
@@ -97,7 +109,15 @@ class Mode:
 			this.solver = model.default_solver;
 			
 		#acquire PySimLib model object
+		if(this.modeRef is None):
+			raise InvalidModeModelException(this);
+			
 		this.__mdlObj = PySimLib.Model(this.modeRef, this.files);
+		
+		if(this.__mdlObj is None):
+			raise InvalidModeModelException(this);
+			
+		#set settings on model object
 		this.__mdlObj.outputName = 'm' + str(this.get_id());
 		this.__mdlObj.outputDir = model.getPath() + os.sep + "output";
 		this.__mdlObj.resultDir = model.getPath() + os.sep + "result";
@@ -130,7 +150,12 @@ class Mode:
 			transId += 1;
 			
 	def read_init(this):
+		from exceptions.MissingTransitionIdException import MissingTransitionIdException;
+		
 		this.tool.ReadInit(this.__mdlObj);
+		
+		if(not('transitionId' in this.__mdlObj.variables)):
+			raise MissingTransitionIdException(this);
 		
 	#Args: None
 	#

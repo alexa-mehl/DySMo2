@@ -41,8 +41,15 @@ class VSM:
 		
 		#Public members
 		this.currentTime = 0;
-		this.translate = True;
+		this.default_solver = None;
 		this.default_tool = None;
+		this.init = {};
+		this.modes = [];
+		this.observe = [];
+		this.plots = [];
+		this.startTime = 0;
+		this.stopTime = 1;
+		this.translate = True;
 		
 		#Init log file
 		PySimLib.Log.SetTarget(this.__logFile);
@@ -116,11 +123,17 @@ class VSM:
 				
 	def __observe(this, simResults):
 		for k in this.observe:
+			synonym = None;
 			if(k in this.__actMode.synonym):
 				synonym = this.__actMode.synonym[k];
-				this.__observer[k].append(simResults[synonym]);
 			else:
+				if(not(this.__actMode.synonym) and (k in simResults)): #direct mapping if no synonyms are given
+					synonym = k;
+					
+			if(synonym is None):
 				this.__observer[k].append([]);
+			else:
+				this.__observer[k].append(simResults[synonym]);
 				
 		this.__observer["time"].append(simResults["time"]);		
 		this.__observer["modeID"].append(this.__actMode.get_id());
@@ -138,6 +151,11 @@ class VSM:
 			os.makedirs(outputPath);
 		
 	def __preprocess(this):
+		from exceptions.NoModeException import NoModeException;
+		
+		if(not(this.modes)):
+			raise NoModeException();
+		
 		#Numerate modes
 		modeId = 1;
 		for m in this.modes:
