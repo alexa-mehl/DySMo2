@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -21,44 +21,62 @@
 """
 
 #Lib
-import imp;
 import os;
-import os.path;
 import sys;
+import PySimLib;
 #Local
-from __modes__ import *;
-from __plots__ import *;
-from Config import Config;
 from Definitions import *;
-from Solver import Solver;
-from Transition import Transition;
-import VSM;
 from exceptions.ModeException import ModeException;
-from Log import *;
+from Mode import Mode;
+from Plots import *;
+from Transition import Transition;
+from VSM import VSM;
 
+
+
+#Functions
 def ExecPythonFile(fileName):
 	file = open(fileName);
 	content = file.read();
 	code = compile(content, fileName, 'exec');
 	exec(code);
 	
-#Load modes
-files = os.listdir("modes");
-#for x in files:
-#	if os.path.isfile("modes/" + x):
-#		ExecPythonFile("modes/" + x);
-#		__import__("modes." + x);
+#Functions for config script
+def Solver(name):
+	return PySimLib.FindSolver(name);
+	
+func = VSM.simulate;
+	
+#Checks
+if(len(sys.argv) == 1):
+	print("Please provide a path to a variable-structure simulatiom description file as argument.");
+	print("Exiting...");
+	exit();
+	
+if(len(sys.argv) == 3):
+	if(sys.argv[2] == "clean"):
+		func = VSM.clean;
+	else:
+		print("You specified the following unknown argument:", sys.argv[2]);
+		print("Exiting...");
+		exit();
 
-modelPath = os.path.abspath(os.path.join(sys.argv[1], os.pardir));
+
+#paths
 configPath = os.path.abspath(sys.argv[1]);
 
-Log_Init(configPath + ".log");
-model = VSM.VSM(modelPath); #The global model instance
+#instantiate model
+model = VSM(configPath); #The global model instance
 
-ExecPythonFile(sys.argv[1]); #Load config file
-os.chdir(modelPath); #switch to model path
+#execute config file
+ExecPythonFile(sys.argv[1]);
+
+#run simulation
+os.chdir(model.getPath()); #switch to model path
 try:
-	model.simulate(); #Simprocess
+	func(model);
 except ModeException as e:
 	print("ERROR: ", e);
 	print("See Log file for details.");
+	
+model.shutdown();

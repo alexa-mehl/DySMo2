@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -23,6 +23,10 @@
 from Plot import Plot;
 
 class VariablePlot(Plot):
+	#Constructor
+	def __init__(this):
+		Plot.__init__(this);
+		
 	#Public methods
 	def getColor(this, modeId, simId, varName):
 		if(varName in this.vars):

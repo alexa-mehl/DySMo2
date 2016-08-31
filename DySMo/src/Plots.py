@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,14 +20,5 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.ModeException import ModeException;
-
-class UncompiledModeException(ModeException):
-	#Constructor
-	def __init__(this, mode):
-		ModeException.__init__(this);
-		this.__mode = mode;
-		
-	#Magic methods
-	def __str__(this):
-		return "Mode " + str(this.__mode.get_id()) + " requires to be compiled.";
+from plots.ModePlot import ModePlot;
+from plots.VariablePlot import VariablePlot;

@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,5 +20,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from modes.DymolaMode import DymolaMode;
-from modes.OpenModelicaMode import OpenModelicaMode;
+from exceptions.ModeException import ModeException;
+
+class InvalidTransitionException(ModeException):
+	#Constructor
+	def __init__(this, mode, transId):
+		ModeException.__init__(this);
+		
+		this.__mode = mode;
+		this.__transId = transId;
+		
+	#Magic methods
+	def __str__(this):
+		return str(this.__mode) + " tried to activate transition " + str(this.__transId) + " but does not contain it.";

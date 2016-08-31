@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,14 +20,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import configparser;
+from exceptions.ModeException import ModeException;
 
-class Config:
+class InvalidModeModelException(ModeException):
 	#Constructor
-	def __init__(self):
-		self._cfgParser = configparser.ConfigParser();
-		self._cfgParser.read('../config.cfg');
-	
-	#Public methods
-	def GetValue(self, category, entryName):
-		return self._cfgParser[category][entryName];
+	def __init__(this, mode):
+		ModeException.__init__(this);
+		
+		this.__mode = mode;
+		
+	#Magic methods
+	def __str__(this):
+		return "The model format of " + str(this.__mode) + " can't be determined. Please check if the 'modeRef' and 'files' attributes are set correctly.";

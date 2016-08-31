@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -23,45 +23,59 @@
 #Lib
 import os;
 import pylab;
+import PySimLib;
 import shutil;
 import time;
-#Local
-from exceptions.SimulationRanBackwardsException import SimulationRanBackwardsException;
-from Log import *;
-from Mat.Mat import *;
-from Mat.OutputStream import *;
-from Transition import *;
 
 class VSM:
 	#Constructor
-	def __init__(this, path):
-		this.__path = path;
+	def __init__(this, configPath):
+		#Private members
+		this.__path = os.path.abspath(os.path.join(configPath, os.pardir));
+		this.__logPath = configPath + ".log";
+		this.__logFile = open(this.__logPath, "w");
 		this.__actMode = None; #current mode
-		this.__currentNum = 0; #current simulation number
-		this.__currentTime = 0;
-		this.__observer = {};
 		this.__compiledModes = {};
+		this.__currentNum = 1; #sim counter
+		this.__observer = {};
 		
-	#Private methods
-	def __clearResult(this):
-		resultPath = this.__path + "\\result";
-		#check whether the sub directory already exists
-		if os.path.exists(resultPath):
-			#delete all files in resultFolder and create an empty folder
-			shutil.rmtree(resultPath);
-			time.sleep(2); #ugly... but somehow os.makedirs fails sometimes with permission error when there is not enough time between shutil.rmtree and os.makedirs
-			
-		os.makedirs(resultPath);
+		#Public members
+		this.currentTime = 0;
+		this.default_solver = None;
+		this.default_tool = None;
+		this.init = {};
+		this.modes = [];
+		this.observe = [];
+		this.plots = [];
+		this.startTime = 0;
+		this.stopTime = 1;
+		this.translate = True;
 		
+		#Init log file
+		PySimLib.Log.SetTarget(this.__logFile);
+		
+	#Private methods		
 	def __compileMode(this, mode):
 		if(mode not in this.__compiledModes):
 			if(this.translate):
 				t1 = time.clock();
 				mode.compile();
-				Log_LogLine("Compilation of mode " + str(mode.get_id()) + " took " + str(time.clock() - t1) + " seconds.");
+				PySimLib.Log.Line("Compilation of mode " + str(mode.get_id()) + " took " + str(time.clock() - t1) + " seconds.");
 			this.__compiledModes[mode] = True;
 			mode.read_init();
-				
+			
+	def __deleteFileSafe(this, folder):
+		#check whether the sub directory already exists
+		if(os.path.exists(folder)):
+			#delete all files in resultFolder and create an empty folder
+			os.remove(folder);
+			
+	def __deleteFolderSafe(this, folder):
+		#check whether the sub directory already exists
+		if(os.path.exists(folder)):
+			#delete all files in resultFolder and create an empty folder
+			shutil.rmtree(folder);
+			
 	def __drawPlots(this):
 		show = False;
 		for p in this.plots:
@@ -78,7 +92,7 @@ class VSM:
 			pylab.xlabel(p.labelXAxis);
 			pylab.ylabel(p.labelYAxis);
 			if(hasattr(p, 'fileName')):
-				pylab.savefig(this.__path + "\\result\\" + p.fileName);
+				pylab.savefig(this.__path + os.sep + "result" + os.sep + p.fileName);
 			if((not hasattr(p, 'fileName')) or hasattr(p, 'show')):
 				show = True;
 			else:
@@ -86,38 +100,78 @@ class VSM:
 		
 		if(show):
 			pylab.show();
-		
-	def __observe(this, simResults):
-		for k in this.observe:
-			if(k in this.__actMode.synonym):
-				synonym = this.__actMode.synonym[k];
-				this.__observer[k].append(simResults[synonym]);
-			else:
-				this.__observer[k].append([]);
-				
-		this.__observer["time"].append(simResults["time"]);		
-		this.__observer["modeID"].append(this.__actMode.get_id());
-		
-	def __preprocess(this):
-		#Numerate modes
-		modeId = 1;
-		for m in this.modes:
-			m.init(this, modeId);
-			modeId += 1;
-		
+			
+	def __getOutputPath(this):
+		return this.__path + os.sep + "output";
+			
+	def __getResultPath(this):
+		return this.__path + os.sep + "result";
+			
+	def __init(this):
 		#Init observer
 		for k in this.observe:
 			this.__observer[k] = [];
 		this.__observer["time"] = [];
 		this.__observer["modeID"] = [];
 		
+		#check default_tool
+		if(not(this.default_tool is None)):
+			name = this.default_tool;
+			this.default_tool = PySimLib.FindTool(name);
+			if(this.default_tool is None):
+				print("The specified default tool '" + name + "' is not available.");
+				
+	def __observe(this, simResults):
+		for k in this.observe:
+			synonym = None;
+			if(k in this.__actMode.synonym):
+				synonym = this.__actMode.synonym[k];
+			else:
+				if(not(this.__actMode.synonym) and (k in simResults)): #direct mapping if no synonyms are given
+					synonym = k;
+					
+			if(synonym is None):
+				this.__observer[k].append([]);
+			else:
+				this.__observer[k].append(simResults[synonym]);
+				
+		this.__observer["time"].append(simResults["time"]);		
+		this.__observer["modeID"].append(this.__actMode.get_id());
+		
+	def __prepareFolders(this):
+		resultPath = this.__getResultPath();
+		
+		this.__deleteFolderSafe(resultPath);
+		time.sleep(1); #ugly... but somehow os.makedirs fails sometimes with permission error when there is not enough time between shutil.rmtree and os.makedirs
+		os.makedirs(resultPath);
+		
+		#make sure output dir exists
+		outputPath = this.__getOutputPath();
+		if not(os.path.exists(outputPath)):
+			os.makedirs(outputPath);
+		
+	def __preprocess(this):
+		from exceptions.NoModeException import NoModeException;
+		
+		if(not(this.modes)):
+			raise NoModeException();
+		
+		#Numerate modes
+		modeId = 1;
+		for m in this.modes:
+			m.init(this, modeId);
+			modeId += 1;
+			
+		#TODO
 		#Run initial mode
-		this.__currentNum = 0;
 		this.__actMode = this.modes[0];
 		this.__compileMode(this.__actMode);
 		this.__actMode.write_init(this.init);
 		
 	def __save_observer(this):
+		from PySimLib.Mat.Mat import Mat;
+		from PySimLib.Mat.OutputStream import OutputStream;
+		
 		nan = float("NaN");
 		variables = ["time", "modeID"] + this.observe;
 		lastVariable = variables[len(variables)-1];
@@ -171,13 +225,13 @@ class VSM:
 					i += 1;
 			x += 1;
 			
-		file = open("result\\observer_data.mat", "wb");
+		file = open("result" + os.sep + "observer_data.mat", "wb");
 		stream = OutputStream(file);
 		mat.Write(stream);		
 		file.close();
 		
 		#write csv
-		file = open("result\\observer_data.csv", "w");
+		file = open("result" + os.sep + "observer_data.csv", "w");
 		
 		#var names
 		for key in variables:
@@ -201,6 +255,8 @@ class VSM:
 		file.close();
 		
 	def __transitionActive(this, transition):
+		from Transition import Transition;
+		
 		oldMode = this.__actMode;
 		this.set_active_mode(transition.post);
 		this.__compileMode(this.__actMode);
@@ -210,67 +266,64 @@ class VSM:
 		
 		if(hasattr(transition, "init_function")):
 			transition.init_function(this.__actMode, oldMode);
-		
+	
 	#Public methods
+	def clean(this):
+		this.shutdown();
+		
+		this.__deleteFileSafe(this.__logPath);
+		this.__deleteFolderSafe(this.__getOutputPath());
+		this.__deleteFolderSafe(this.__getResultPath());	
+		
 	def getCurrentSimulationNumber(this):
 		return this.__currentNum;
-		
-	def getCurrentTime(this):
-		return this.__currentTime;
 		
 	def getPath(this):
 		return this.__path;
 		
-	def setCurrentTime(this, t):
-		this.__currentTime = t;
-		
 	def set_active_mode(this, newMode):
 		this.__actMode = newMode;
 		
-	def simulate(this):
-		readTime = 0;
-		simTime = 0;
-		modeTimes = ''
+	def shutdown(this):
+		PySimLib.Log.SetTarget(None);
+		if(not(this.__logFile is None)):
+			this.__logFile.close();
 		
-		this.__clearResult();
+	def simulate(this):
+		simTime = 0;
+		readTime = 0;
+		
+		this.__init();
+		this.__prepareFolders();
 		this.__preprocess();
 		
-		this.__currentTime = this.startTime;
+		this.currentTime = this.startTime;
 		
-		while(this.__currentTime < this.stopTime):
-			#Write initial data & simulation time
-			this.__actMode.save_init(this.__currentTime);
-			
-			#Run it
-			print("Running simulation", this.__currentNum+1, "ModeID:", this.__actMode.get_id(), "Time:", this.__currentTime);
+		while(this.currentTime < this.stopTime):
+			#Run sim
+			simTime += this.__actMode.simulate();
 			t1 = time.clock();
-			this.__actMode.simulate();
+			result = this.__actMode.read_last_result();
 			t2 = time.clock();
-			simTime += (t2-t1);
-			string = "Simulation " + str(this.__currentNum+1) + " of mode " + str(this.__actMode.get_id()) + " took " + str(t2 - t1) + " seconds"
-			Log_LogLine(string);
-			modeTimes = modeTimes + "\n"+string
-			this.__actMode.set_lastSimulationNumber(this.__currentNum);
+			dt = t2 - t1;
+			readTime += dt;
 			
-			t1 = time.clock();
-			result = this.__actMode.get_last_result();
-			readTime += (time.clock() - t1);
-			this.__observe(result.get_values());
+			#process results
+			this.__observe(result.GetValues());
 			
-		
 			observTime = this.__observer["time"];
 			observTime = observTime[len(observTime)-1];
 			lastTimeValue = observTime[len(observTime)-1];
 			
-			if(lastTimeValue < this.__currentTime):
+			if(lastTimeValue < this.currentTime):
 				raise SimulationRanBackwardsException();
 			
-			this.__currentTime = lastTimeValue;
-			string = "Simulation "+ str(this.__currentNum+1) + " ended at "+ str(this.__currentTime)
-			Log_LogLine(string+"\n===================================\n\n\n")
+			this.currentTime = lastTimeValue;
+			string = "Simulation "+ str(this.__currentNum) + " ended at "+ str(this.currentTime)
+			PySimLib.Log.Line(string+"\n===================================\n\n\n")
 			print(string);
 			
-			if(this.__currentTime >= this.stopTime):
+			if(this.currentTime >= this.stopTime):
 				print("Simulation done");
 				break;
 				
@@ -282,14 +335,19 @@ class VSM:
 			this.__transitionActive(transition);
 		
 			this.__currentNum += 1; #next sim
-		Log_LogLine("");
-		Log_LogLine("Overall timing info");
-		Log_LogLine(modeTimes)
-		Log_LogLine("Reading simulation results: " + str(readTime) + " seconds.");
-		Log_LogLine("Simulation time: " + str(simTime) + " seconds");
+			
+		PySimLib.Log.Line("");
+		PySimLib.Log.Line("Overall timing info");
+		PySimLib.Log.Line("Reading simulation results: " + str(readTime) + " seconds.");
+		PySimLib.Log.Line("Simulation time: " + str(simTime) + " seconds");
+		PySimLib.Log.Line("Total: " + str(readTime + simTime) + " seconds");
+		#TODO compile time
 		
-		this.__save_observer();	
+		this.__save_observer();
 		this.__drawPlots();
 		
-		
-		
+		#close tools
+		for m in this.modes:
+			m.tool.Close();
+		if(not this.default_tool is None):
+			this.default_tool.Close();

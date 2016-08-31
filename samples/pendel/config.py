@@ -1,5 +1,6 @@
 #Model
 model.default_solver = Solver("dassl");
+model.default_solver.tolerance = 1e-4;
 model.translate = True;
 model.init = {};
 model.startTime = 0;
@@ -7,17 +8,13 @@ model.stopTime = 10;
 model.observe = ['x', 'y'];
 
 #First mode
-mode1 = DymolaMode();
-#mode1 = OpenModelicaMode();
-mode1.solver.tolerance = 1e-4;
+mode1 = Mode();
 mode1.modeRef = "pendulum.Pendulum_struc";
 mode1.files = ["pendulum.mo"];
 mode1.synonym = {'x' : 'x', 'y' : 'y'};
 
 #Second mode
-mode2 = DymolaMode();
-#mode2 = OpenModelicaMode();
-mode2.solver.tolerance = 1e-4;
+mode2 = Mode();
 mode2.modeRef = "pendulum.Ball_struc";
 mode2.files = ["pendulum.mo"];
 mode2.synonym = {'x' : 'x', 'y' : 'y'};

@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -22,11 +22,13 @@
 
 from exceptions.ModeException import ModeException;
 
-class SimulationFailedException(ModeException):
+class MissingTransitionIdException(ModeException):
 	#Constructor
-	def __init__(this):
-		pass
+	def __init__(this, mode):
+		ModeException.__init__(this);
+		
+		this.__mode = mode;
 		
 	#Magic methods
 	def __str__(this):
-		return "Simulation failed.";
+		return str(this.__mode) + " does not contain the neccessary 'transitionId' variable. Please include it in the model.";

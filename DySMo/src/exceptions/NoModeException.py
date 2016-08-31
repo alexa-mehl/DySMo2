@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -20,6 +20,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import Config;
+from exceptions.ModeException import ModeException;
 
-g_cfg = Config.Config();
+class NoModeException(ModeException):
+	#Constructor
+	def __init__(this):
+		ModeException.__init__(this);
+		
+	#Magic methods
+	def __str__(this):
+		return "The variable structure model has no modes. Did you set 'model.modes'?";

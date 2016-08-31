@@ -8,20 +8,20 @@ model.stopTime = 190000;
 model.observe = ['x', 'h', 'vx', 'vy', 'v'];
 
 #First mode
-mode1 = DymolaMode();
+mode1 = Mode();
 mode1.modeRef = "Satellite.PlanetRocket";
 mode1.files = ["Satellite.mo"];
 mode1.synonym = {'x' : 'rocket.x', 'h' : 'rocket.height', 'vx':'rocket.vx', 'vy':'rocket.vy', 'v':'rocket.v'};
 
 #Second mode
-mode2 = DymolaMode();
+mode2 = Mode();
 mode2.modeRef = "Satellite.PlanetSatellite";
 mode2.files = ["Satellite.mo"];
 mode2.synonym = {'x' : 'satellite.x', 'h' : 'satellite.y', 'vx':'satellite.vx', 'vy':'satellite.vy', 'v':'satellite.v'};
 
 
 #Third mode
-mode3 = OpenModelicaMode();
+mode3 = Mode();
 mode3.modeRef = "Satellite.PlanetSatelliteChange";
 mode3.files = ["Satellite1.mo"];
 mode3.synonym = {'x' : 'satellite.x', 'h' : 'satellite.y', 'vx':'satellite.vx', 'vy':'satellite.vy', 'v':'satellite.v'};

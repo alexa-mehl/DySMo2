@@ -1,5 +1,5 @@
 """
-  Copyright (C) 2014-2015  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
+  Copyright (C) 2014-2016  Alexandra Mehlhase <a.mehlhase@tu-berlin.de>, All Rights Reserved
   
   Implemented by Alexandra Mehlhase, Amir Czwink
   
@@ -21,86 +21,60 @@
 """
 
 #Lib
-from copy import deepcopy;
 import os;
-#Local
-from Solver import Solver, SolverScheme;
+import PySimLib;
+import time;
 
-"""
-This class is the base for any class that communicates with a simulation tool.
-A simulation tool communication class must subclass from this class and implement their abstract methods.
-"""
 class Mode:
 	#Constructor
 	def __init__(this):
 		#Private members
-		this.__model = None;
+		this.__vsmModel = None;
 		this.__id = None;
+		this.__mdlObj = None; #the PySimLib model object
 		this.__lastSimNum = None;
-		#Protected members
-		this._init = {};
-		this._end = {};
+		this.__simObjs = {}; #dict containing all simulation objects for this mode
+		
 		#Public members
-		this.modeRef = ""; #Identifier of the mode
-		this.solver = SolverScheme(); #Solver settings for this mode
+		this.files = [];
+		this.modeRef = None; #Identifier of the mode
+		this.solver = None; #Solver settings for this mode
+		this.synonym = {};
+		this.tool = None; #PySimLib tool object for simulating this mode
 		this.transitions = []; #Transitions that lead out of this mode
-	
-	#Protected methods
-	#Deletes file in model folder if it exists
-	#
-	#Args:
-	#fileName - file, relative to model folder
-	#
-	#Returns: Nothing
-	def _deleteFile(this, fileName):
-		if(os.path.isfile(this.__model.getPath() + "\\" + fileName)):
-			os.remove(this.__model.getPath() + "\\" + fileName);
-			
-	#Checks whether a file in model folder exists
-	#
-	#Args:
-	#fileName - file, relative to model folder
-	#
-	#Returns: True, if file exists in model folder, else False			
-	def _fileExists(this, fileName):
-		return os.path.isfile(this.__model.getPath() + "\\" + fileName);
 		
-	#Proposes a filename (including correct path) for storing a simulation result file for a specific simulation.
-	#Does not append a file extension (this must be appended manually).
-	#
-	#Args:
-	# simNum - Simulation number for the current simulation
-	#
-	#Returns: Path prefix (without file extension) for the result file name
-	def _getResultFileName(this, simNum):
-		return this.__model.getPath() + "\\result\\" + "sim" + str(simNum) + '_mode' + str(this.__id) + '_' + this.modeRef;
-		
-	#Renames a file in model folder
-	#If the target file exists, it is deleted before the operation.
-	#
-	#Args:
-	# fromName - Source file name
-	# toName - Target file name
-	#
-	#Returns: Nothing
-	def _renameFile(this, fromName, toName):
-		this._deleteFile(toName);
-		os.rename(this.__model.getPath() + "\\" + fromName, this.__model.getPath() + "\\" + toName);
+	#Magic methods
+	def __str__(this):
+		return "Mode " + str(this.__id);
 		
 	#Public methods
-	
+	#Called by the framework when this mode should compile itself.
+	#Note that this is called only once when the mode gets used the first time.
+	#
+	#Args: None
+	#
+	#Returns: Nothing
+	def compile(this):
+		print("Compiling mode", this.get_id(), "...");
+		
+		this.tool.Compile(this.__mdlObj);
+		
 	#Finds the transition object based on the transition id in the end values of this mode.
 	#
 	#Args: None
 	#
 	#Returns: Outgoing transition object
 	def find_transition(this):
-		transId = int(this._end["transitionId"]);
+		transId = int(this.get_endValue("transitionId"));
+		
+		if(transId > len(this.transitions)):
+			from exceptions.InvalidTransitionException import InvalidTransitionException;
+			raise InvalidTransitionException(this, transId);
 		
 		return this.transitions[transId-1];
-	
+		
 	def get_endValue(this, varName):
-		return this._end[varName];
+		return this.__mdlObj.variables[varName].final;
 		
 	#Args: None
 	#
@@ -108,23 +82,14 @@ class Mode:
 	def get_id(this):
 		return this.__id;
 		
-	#Args: None
-	#
-	#Returns: The simulation result of the last simulation on this mode.
-	def get_last_result(this):
-		return this.get_result(this.__lastSimNum);
-		
-	#Args: None
-	#
-	#Returns: The model object, that this mode belongs to.
 	def get_model(this):
-		return this.__model;
+		return this.__vsmModel;
+		
+	def get_parameter(this, key):
+		return this.__mdlObj.parameters[key];
 		
 	def has_endValue(this, varName):
-		return varName in this._end;
-		
-	def has_initValue(this, varName):
-		return varName in this._init;
+		return varName in this.__mdlObj.variables;
 		
 	#Initializes this mode.
 	#Initializes all transition objects in this mode.
@@ -135,31 +100,113 @@ class Mode:
 	#
 	#Returns: Nothing
 	def init(this, model, modeId):
-		this.__model = model;
+		from exceptions.InvalidModeModelException import InvalidModeModelException;
+		
+		this.__vsmModel = model;
 		this.__id = modeId;
 		
-		#Build the real solver
-		if(not type(this.solver) == Solver):
-			scheme = this.solver;
-			this.solver = deepcopy(model.default_solver);
-			if(hasattr(scheme, 'tolerance')):
-				this.solver.tolerance = scheme.tolerance;
-			#TODO THE REST
+		if(this.solver is None):
+			this.solver = model.default_solver;
+			
+		#acquire PySimLib model object
+		if(this.modeRef is None):
+			raise InvalidModeModelException(this);
+			
+		this.__mdlObj = PySimLib.Model(this.modeRef, this.files);
 		
+		if(this.__mdlObj is None):
+			raise InvalidModeModelException(this);
+			
+		#set settings on model object
+		this.__mdlObj.outputName = 'm' + str(this.get_id());
+		this.__mdlObj.outputDir = model.getPath() + os.sep + "output";
+		this.__mdlObj.resultDir = model.getPath() + os.sep + "result";
+		this.__mdlObj.simDir = model.getPath();
+		
+		#check tool
+		if(not (this.tool is None)):
+			this.tool = PySimLib.FindTool(this.tool);
+			if(this.tool is None):
+				print("The desired tool for mode " + str(this.__id) + " is not available.");
+				
+		if(this.tool is None): #we dont have a tool
+			if(not(this.__vsmModel.default_tool is None)): #try the default tool
+				if(this.__vsmModel.default_tool.Accepts(this.__mdlObj)): #if is compatible
+					this.tool = this.__vsmModel.default_tool; #silent using, as the user specified the default_tool
+			else: #last try to get some compatible tool
+				compatibleTools = this.__mdlObj.GetCompatibleTools();
+					
+				if(compatibleTools): #there is at least one simulator
+					this.tool = compatibleTools[0];
+					print("Choosing tool '" + str(this.tool) + "' for mode " + str(this.__id) + "."); #inform which one we use
+				else:
+					print("No simulator is available for mode " + str(this.__id) + ". Exiting...");
+					exit(1);
+			
+		#init transitions
 		transId = 1;
 		for t in this.transitions:
 			t.init(transId);
 			transId += 1;
 			
-	def set_initialValue(this, varName, value):
-		this._init[varName] = value;
+	def read_init(this):
+		from exceptions.MissingTransitionIdException import MissingTransitionIdException;
 		
-	#Args:
-	# simNum - Simulation number that identifies the last simulation on this mode.
+		this.tool.ReadInit(this.__mdlObj);
+		
+		if(not('transitionId' in this.__mdlObj.variables)):
+			raise MissingTransitionIdException(this);
+		
+	#Args: None
 	#
-	#Returns: Nothing		
-	def set_lastSimulationNumber(this, simNum):
-		this.__lastSimNum = simNum;
+	#Returns: The simulation result of the last simulation on this mode.
+	def read_last_result(this):
+		return this.read_result(this.__lastSimNum);
+		
+	#Reads and loads a simulation result, based on a simulation number, that this mode produced.
+	#The result has to be of type SimulationResult or a subclass of it.
+	#
+	#Args:
+	# simNum - Simulation number
+	#
+	#Returns: SimulationResult object
+	def read_result(this, simNum):
+		return this.tool.ReadResult(this.__simObjs[simNum]);
+		
+	def set_initialValue(this, varName, value):
+		this.__mdlObj.variables[varName].start = value;
+		
+	def set_parameter(this, name, value):
+		this.__mdlObj.parameters[name] = value;
+		
+	def set_parameters(this, params):
+		for key in params:
+			this.set_parameter(key, params[key]);
+		
+	#Simulates the mode and moves the result file to the result folder.
+	#
+	#Args: None
+	#
+	#Returns: Nothing
+	def simulate(this):
+		simObj = PySimLib.Simulation(this.__mdlObj, this.__vsmModel.getCurrentSimulationNumber());
+		
+		simObj.startTime = this.__vsmModel.currentTime;
+		simObj.stopTime = this.__vsmModel.stopTime;
+		
+		print("Running simulation", simObj.GetSimNumber(), "ModeID:", this.get_id(), "Time:", this.__vsmModel.currentTime);
+		t1 = time.clock();
+		this.tool.Simulate(simObj);
+		t2 = time.clock();
+		
+		
+		string = "Simulation " + str(simObj.GetSimNumber()) + " of mode " + str(this.get_id()) + " took " + str(t2 - t1) + " seconds";
+		PySimLib.Log.Line(string);
+		
+		this.__lastSimNum = simObj.GetSimNumber();
+		this.__simObjs[this.__lastSimNum] = simObj;
+		
+		return t2 - t1;
 		
 	#Sets initial values in this mode.
 	#
@@ -169,41 +216,4 @@ class Mode:
 	#Returns: Nothing
 	def write_init(this, inits):
 		for key in inits:
-			this._init[key] = inits[key];
-		
-	#Abstract methods
-	#Called by the framework when this mode should compile itself.
-	#Note that this is called only once when the mode gets used the first time.
-	#
-	#Args: None
-	#
-	#Returns: Nothing
-	def compile(this):
-		raise Exception("Method 'compile' in class 'Mode' is abstract");
-		
-	#Reads and loads a simulation result, based on a simulation number, that this mode produced.
-	#The result has to be of type SimulationResult or a subclass of it.
-	#
-	#Args:
-	# simNum - Simulation number
-	#
-	#Returns: SimulationResult object
-	def get_result(this, simNum):
-		raise Exception("Method 'get_result' in class 'Mode' is abstract");
-		
-	#Saves the simulation settings to a file that is later readable by a call to "simulate".
-	#
-	#Args:
-	# startTime - The time at which the mode should start to simulate
-	#
-	#Returns: Nothing
-	def save_init(this, startTime):
-		raise Exception("Method 'save_init' in class 'Mode' is abstract");
-		
-	#Should simulate the mode and move the result file to the result folder.
-	#
-	#Args: None
-	#
-	#Returns: Nothing
-	def simulate(this):
-		raise Exception("Method 'simulate' in class 'Mode' is abstract");
+			this.__mdlObj.variables[key].start = inits[key];

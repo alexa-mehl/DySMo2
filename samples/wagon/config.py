@@ -1,5 +1,6 @@
 #Model
 model.default_solver = Solver("dassl");
+model.default_solver.tolerance = 3e-05;
 model.translate = True;
 model.init = {};
 model.startTime = 0;
@@ -7,22 +8,19 @@ model.stopTime = 10;
 model.observe = ['y'];
 
 #First mode
-mode1 = DymolaMode();
-mode1.solver.tolerance = 3e-05;
+mode1 = Mode();
 mode1.modeRef = "mechanics.vehicle_struc";
 mode1.files = ["mechanics.mo"];
 mode1.synonym = {'y' : 'y'};
 
 #Second Mode
-mode2 = DymolaMode();
-mode2.solver.tolerance = 3e-05;
+mode2 = Mode();
 mode2.modeRef = "mechanics.ball_struc";
 mode2.files = ["mechanics.mo"];
 mode2.synonym = {'y' : 'h'};
 
 #Third Mode
-mode3 = DymolaMode();
-mode3.solver.tolerance = 3e-05;
+mode3 = Mode();
 mode3.modeRef = "mechanics.contact_struc";
 mode3.files = ["mechanics.mo"];
 mode3.synonym = {'y' : 'h'};

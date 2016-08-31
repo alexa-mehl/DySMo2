@@ -1,24 +1,24 @@
 #Model
 model.default_solver = Solver("dassl");
 model.default_solver.numberOfIntervals = 500;
-model.translate = False;
+model.translate = True;
 model.init = {};
 model.startTime = 0;
 model.stopTime = 100000;
 model.observe = ['T1'];
 
 def more(actMode, oldMode):
-	result = oldMode.get_last_result();
-	time = result.get_value('time', 5);
+	result = oldMode.read_last_result();
+	time = result.GetValue('time', 5);
 	num = 1
 	
 	for i in [1,2]:
-		T = result.get_value('m1.T', 5);
+		T = result.GetValue('m1.T', 5);
 		for j in range(1,5):
 			actMode.set_initialValue('m'+ str(num)+'.T', T)  
 			num = num+1  
 	
-	actMode.get_model().setCurrentTime(time)
+	actMode.get_model().currentTime = time;
 
 def less(actMode, oldMode):
 	num = 1
@@ -31,14 +31,14 @@ def less(actMode, oldMode):
 			
 
 #First mode
-mode1 = DymolaMode();
+mode1 = Mode();
 mode1.modeRef = "pipe.elements2";
 mode1.files = ["pipe.mo"];
 mode1.synonym = {'T1' : 'm1.T', 'CPUtime' : 'CPUtime'};
 
 
 #Second mode
-mode2 = DymolaMode();
+mode2 = Mode();
 mode2.modeRef = "pipe.elements10";
 mode2.files = ["pipe.mo"];
 mode2.synonym = {'T1' : 'm1.T', 'CPUtime' : 'CPUtime'};

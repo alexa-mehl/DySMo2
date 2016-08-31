@@ -7,7 +7,7 @@ parameter Real r = 1;
 parameter Real g=9.81;
 Real h(start=20);
 Real v;
-parameter Integer switch_to = 0;
+//parameter Integer switch_to = 0;
 Integer transitionId(start=0);
 equation
   der(h) = v;
