@@ -12,11 +12,11 @@ Example:
 python Path/To/DySMo/src/DySMo.py Path/To/Your/Model/somefile.py
 ````
 For easier usage, we included a run.bat for Windows that you can use with easy drap&drop.
-Simply drag your variable-structure-model simulation description on to the run.bat and it will simulate your model.
-The Python-installer defaults to add the Python installation directory to the PATH enviroment variable. If you did not select this option, then you have to add the path to the Python-executeable to the `run.bat`, so that it can find the location of Python.
+Simply drag your variable-structure-model simulation description on to the `run.bat` and it will simulate your model.
+The Python-installer defaults to add the Python installation directory to the PATH environment variable. If you did not select this option, then you have to add the path to the Python-executable to the `run.bat`, so that it can find the location of Python.
 Be aware that problems may occur when the PySimulationLibrary does not have privileges to write files or so.
 This may be only for several directories (usually some subfolder of your User folder should be fine).
-If not then you have to run the command with Administator privileges, which usually does not work with drag & drop.
+If not then you have to run the command with Administrator privileges, which usually does not work with drag & drop.
 
 ## Remark
 Just in case it skipped your attention: This is a forked repository! The original DySMo framework has been developed by Alexandra Mehlhase and Amir Czwink. This repository contains some adjustments and some improvements especially for the usecase: Dymola as a simulation tool. 
