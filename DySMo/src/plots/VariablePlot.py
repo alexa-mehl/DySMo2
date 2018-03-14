@@ -20,15 +20,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from Plot import Plot;
+from Plot import Plot
+
 
 class VariablePlot(Plot):
-	#Constructor
-	def __init__(this):
-		Plot.__init__(this);
-		
-	#Public methods
-	def getColor(this, modeId, simId, varName):
-		if(varName in this.vars):
-			return this.vars[varName];
-		return None;
+    # Constructor
+    def __init__(this):
+        Plot.__init__(this)
+
+    # Public methods
+    def getColor(this, modeId, simId, varName):
+        if(varName in this.vars):
+            return this.vars[varName]
+        return None
