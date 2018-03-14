@@ -20,32 +20,33 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class Transition:
-	#Constructor
-	def __init__(this):
-		this.__id = None;
-		
-	#Public methods
-	def get_id(this):
-		return this.__id;
-		
-	def init(this, id):
-		this.__id = id;
-		
-	def mapping(this, oldMode, newMode):
-		valuesToSet = {};
-		mapping = this.mapping;
-		
-		for key in mapping:
-			if(key == "*" and mapping[key] == "*"):
-				this.__mapStar(oldMode, newMode, valuesToSet);
-				continue;
-				
-			if(not oldMode.has_endValue(mapping[key])):
-				from exceptions.IllegalMappingException import IllegalMappingException;
-				
-				raise IllegalMappingException(oldMode, key, this, mapping[key]);
-				
-			valuesToSet[key] = oldMode.get_endValue(mapping[key]);
-			
-		return valuesToSet;
+    # Constructor
+    def __init__(this):
+        this.__id = None
+
+    # Public methods
+    def get_id(this):
+        return this.__id
+
+    def init(this, id):
+        this.__id = id
+
+    def mapping(this, oldMode, newMode):
+        valuesToSet = {}
+        mapping = this.mapping
+
+        for key in mapping:
+            if(key == "*" and mapping[key] == "*"):
+                this.__mapStar(oldMode, newMode, valuesToSet)
+                continue
+
+            if(not oldMode.has_endValue(mapping[key])):
+                from exceptions.IllegalMappingException import IllegalMappingException
+
+                raise IllegalMappingException(oldMode, key, this, mapping[key])
+
+            valuesToSet[key] = oldMode.get_endValue(mapping[key])
+
+        return valuesToSet

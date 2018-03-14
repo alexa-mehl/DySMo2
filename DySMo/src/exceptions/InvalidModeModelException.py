@@ -20,15 +20,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.ModeException import ModeException;
+from exceptions.ModeException import ModeException
+
 
 class InvalidModeModelException(ModeException):
-	#Constructor
-	def __init__(this, mode):
-		ModeException.__init__(this);
-		
-		this.__mode = mode;
-		
-	#Magic methods
-	def __str__(this):
-		return "The model format of " + str(this.__mode) + " can't be determined. Please check if the 'modeRef' and 'files' attributes are set correctly.";
+    # Constructor
+    def __init__(this, mode):
+        ModeException.__init__(this)
+
+        this.__mode = mode
+
+    # Magic methods
+    def __str__(this):
+        return "The model format of " + str(this.__mode) + " can't be determined. Please check if the 'modeRef' and 'files' attributes are set correctly."

@@ -20,16 +20,17 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.ModeException import ModeException;
+from exceptions.ModeException import ModeException
+
 
 class InvalidTransitionException(ModeException):
-	#Constructor
-	def __init__(this, mode, transId):
-		ModeException.__init__(this);
-		
-		this.__mode = mode;
-		this.__transId = transId;
-		
-	#Magic methods
-	def __str__(this):
-		return str(this.__mode) + " tried to activate transition " + str(this.__transId) + " but does not contain it.";
+    # Constructor
+    def __init__(this, mode, transId):
+        ModeException.__init__(this)
+
+        this.__mode = mode
+        this.__transId = transId
+
+    # Magic methods
+    def __str__(this):
+        return str(this.__mode) + " tried to activate transition " + str(this.__transId) + " but does not contain it."
