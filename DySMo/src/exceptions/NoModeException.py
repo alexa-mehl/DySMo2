@@ -20,13 +20,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.ModeException import ModeException;
+from exceptions.ModeException import ModeException
+
 
 class NoModeException(ModeException):
-	#Constructor
-	def __init__(this):
-		ModeException.__init__(this);
-		
-	#Magic methods
-	def __str__(this):
-		return "The variable structure model has no modes. Did you set 'model.modes'?";
+    # Constructor
+    def __init__(this):
+        ModeException.__init__(this)
+
+    # Magic methods
+    def __str__(this):
+        return "The variable structure model has no modes. Did you set 'model.modes'?"

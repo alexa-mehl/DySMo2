@@ -20,5 +20,5 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from plots.ModePlot import ModePlot;
-from plots.VariablePlot import VariablePlot;
+from plots.ModePlot import ModePlot
+from plots.VariablePlot import VariablePlot
