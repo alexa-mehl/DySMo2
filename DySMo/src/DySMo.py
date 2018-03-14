@@ -20,63 +20,65 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-#Lib
-import os;
-import sys;
-import PySimLib;
-#Local
-from Definitions import *;
-from exceptions.ModeException import ModeException;
-from Mode import Mode;
-from Plots import *;
-from Transition import Transition;
-from VSM import VSM;
+# Lib
+import os
+import sys
+import PySimLib
+# Local
+from Definitions import *
+from exceptions.ModeException import ModeException
+from Mode import Mode
+from Plots import *
+from Transition import Transition
+from VSM import VSM
 
 
-
-#Functions
+# Functions
 def ExecPythonFile(fileName):
-	file = open(fileName);
-	content = file.read();
-	code = compile(content, fileName, 'exec');
-	exec(code);
-	
-#Functions for config script
+    file = open(fileName)
+    content = file.read()
+    code = compile(content, fileName, 'exec')
+    exec(code)
+
+# Functions for config script
+
+
 def Solver(name):
-	return PySimLib.FindSolver(name);
-	
-func = VSM.simulate;
-	
-#Checks
+    return PySimLib.FindSolver(name)
+
+
+func = VSM.simulate
+
+# Checks
 if(len(sys.argv) == 1):
-	print("Please provide a path to a variable-structure simulatiom description file as argument.");
-	print("Exiting...");
-	exit();
-	
+    print("Please provide a path to a variable-structure simulatiom description file as argument.")
+    print("Exiting...")
+    exit()
+
 if(len(sys.argv) == 3):
-	if(sys.argv[2] == "clean"):
-		func = VSM.clean;
-	else:
-		print("You specified the following unknown argument:", sys.argv[2]);
-		print("Exiting...");
-		exit();
+    if(sys.argv[2] == "clean"):
+        func = VSM.clean
+    else:
+        print("You specified the following unknown argument:", sys.argv[2])
+        print("Exiting...")
+        exit()
 
 
-#paths
-configPath = os.path.abspath(sys.argv[1]);
+# paths
+configPath = os.path.abspath(sys.argv[1])
 
-#instantiate model
-model = VSM(configPath); #The global model instance
+# instantiate model
+model = VSM(configPath)  # The global model instance
 
-#execute config file
-ExecPythonFile(sys.argv[1]);
+# execute config file
+ExecPythonFile(sys.argv[1])
 
-#run simulation
-os.chdir(model.getPath()); #switch to model path
+# run simulation
+os.chdir(model.getPath())  # switch to model path
 try:
-	func(model);
+    func(model)
 except ModeException as e:
-	print("ERROR: ", e);
-	print("See Log file for details.");
-	
-model.shutdown();
+    print("ERROR: ", e)
+    print("See Log file for details.")
+
+model.shutdown()

@@ -20,15 +20,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from exceptions.ModeException import ModeException;
+from exceptions.ModeException import ModeException
+
 
 class MissingTransitionIdException(ModeException):
-	#Constructor
-	def __init__(this, mode):
-		ModeException.__init__(this);
-		
-		this.__mode = mode;
-		
-	#Magic methods
-	def __str__(this):
-		return str(this.__mode) + " does not contain the neccessary 'transitionId' variable. Please include it in the model.";
+    # Constructor
+    def __init__(this, mode):
+        ModeException.__init__(this)
+
+        this.__mode = mode
+
+    # Magic methods
+    def __str__(this):
+        return str(this.__mode) + " does not contain the neccessary 'transitionId' variable. Please include it in the model."

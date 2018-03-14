@@ -20,28 +20,29 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from Definitions import *;
-from Plot import Plot;
+from Definitions import *
+from Plot import Plot
+
 
 class ModePlot(Plot):
-	#Constructor
-	def __init__(this):
-		Plot.__init__(this);
-		
-		this.__counter = 0;
-		this.__vars = {};
-		
-	#Private methods
-	def getVarCounter(this, varName):
-		if(varName not in this.__vars):
-			this.__vars[varName] = this.__counter;
-			this.__counter -= 1;
-			
-		return this.__vars[varName];
-		
-	#Public methods
-	def getColor(this, modeId, simId, varName):
-		colId = ((this.getVarCounter(varName)+ modeId - 1) % 7)+1;
-		if(varName in this.vars):
-			return Color(colId);
-		return None;
+    # Constructor
+    def __init__(this):
+        Plot.__init__(this)
+
+        this.__counter = 0
+        this.__vars = {}
+
+    # Private methods
+    def getVarCounter(this, varName):
+        if(varName not in this.__vars):
+            this.__vars[varName] = this.__counter
+            this.__counter -= 1
+
+        return this.__vars[varName]
+
+    # Public methods
+    def getColor(this, modeId, simId, varName):
+        colId = ((this.getVarCounter(varName) + modeId - 1) % 7) + 1
+        if(varName in this.vars):
+            return Color(colId)
+        return None
