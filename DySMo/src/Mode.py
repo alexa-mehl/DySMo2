@@ -193,6 +193,8 @@ class Mode:
 		
 		simObj.startTime = this.__vsmModel.currentTime;
 		simObj.stopTime = this.__vsmModel.stopTime;
+		if(this.solver is not None):
+			simObj.solver = this.solver;
 		
 		print("Running simulation", simObj.GetSimNumber(), "ModeID:", this.get_id(), "Time:", this.__vsmModel.currentTime);
 		t1 = time.clock();
